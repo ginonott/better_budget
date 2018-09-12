@@ -1,9 +1,8 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { Segment, Table, Label, Button, Divider, Dropdown, Icon} from 'semantic-ui-react';
+import { Segment, Table, Label, Button, Divider, Dropdown} from 'semantic-ui-react';
 import moment from 'moment';
 import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter } from '../reducers/transactions.action';
-import STATUSES from '../constants/status';
 import {getDateRange} from '../util';
 
 class TransactionRow extends Component {
