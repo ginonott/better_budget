@@ -1,3 +1,3 @@
-it('renders without crashing', () => {
-  return true;
+it('passes', () => {
+  expect(true).toBe(true);
 });
