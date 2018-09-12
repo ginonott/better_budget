@@ -5,7 +5,7 @@ import MonthSelector from './MonthSelector';
 export default class NavbarMenu extends Component {
     render() {
         return(
-            <Menu fluid={true}>
+            <Menu stackable>
                 <Menu.Item onClick={() => 0} icon="home"/>
                 <Menu.Item onClick={() => 0} name="Budgets"/>
                 <Menu.Item onClick={() => 0} name="Settings"/>
