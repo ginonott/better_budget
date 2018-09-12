@@ -5,7 +5,12 @@ import {AUTH_TYPES} from './auth.action';
 import { BUDGET_TYPES } from "./budget.action";
 
 const defaultState = Object.freeze({
-    tags: ['Drinks', 'Restaurants', 'Snacks', 'Pets', 'Bills', 'Home', 'Laundry', 'Health', 'Groceries', 'Entertainment'],
+    tags: [
+            'Drinks', 'Restaurants', 'Snacks',
+            'Pets', 'Bills', 'Home', 'Laundry',
+            'Health', 'Groceries', 'Entertainment',
+            'Clothing', 'Gifts'
+        ],
     alerts: {
         alerts: []
     },

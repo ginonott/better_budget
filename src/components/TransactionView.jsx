@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { Segment, Table, Label, Button, Divider, Dropdown} from 'semantic-ui-react';
+import { Segment, Table, Label, Button, Divider, Dropdown, Icon} from 'semantic-ui-react';
 import moment from 'moment';
 import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter } from '../reducers/transactions.action';
 import STATUSES from '../constants/status';
@@ -62,24 +62,11 @@ class TransactionView extends Component {
         window.location.hash = '#add-trans';
     }
 
-    dateChanged = (e, {value}) => {
-        this.props.changeDate(new Date(this.props.selectedDate.getFullYear(), value, 1));
-    }
-
     tagFilterChanged = (e, {value}) => {
         this.props.setTagFilter(value);
     }
 
     render() {
-        const months = new Array(12)
-            .fill(0)
-            .map((_, indx) => indx)
-            .map(month => ({
-                key: 'month-' + month,
-                value: month,
-                text: moment(new Date(new Date().getFullYear(), month, 1)).format('MMMM')
-            }));
-
         const tagOptions = ['All', 'Uncategorized', ...this.props.tags.sort((t1, t2) => t1 >= t2)].map(t => ({
             key: t,
             value: t,
@@ -89,8 +76,7 @@ class TransactionView extends Component {
         return (
             <Segment id="transactions" className="transaction-view">
                 <div className="transaction-header">
-                    <Dropdown loading={this.props.loading} onChange={this.dateChanged} value={this.props.selectedDate.getMonth()} selection options={months}/>
-                    <Dropdown onChange={this.tagFilterChanged} value={this.props.tagFilter} selection options={tagOptions}/>
+                    <span>Showing <Dropdown onChange={this.tagFilterChanged} value={this.props.tagFilter} inline options={tagOptions}/></span>
                 </div>
                 <Divider/>
                 <div className="transaction-list">
@@ -141,7 +127,6 @@ class TransactionView extends Component {
 
 export default connect(state => ({
     transactions: Object.values(state.transactions.transactionsById),
-    loading: state.transactions.status === STATUSES.STARTED,
     selectedDate: state.transactions.selectedDate,
     edittingTransaction: state.transactionAdder.transaction.id,
     tagFilter: state.transactions.tagFilter,

@@ -1,15 +1,16 @@
 import React, {Component} from 'react';
-import { Menu } from 'semantic-ui-react';
+import { Menu, Header } from 'semantic-ui-react';
+import MonthSelector from './MonthSelector';
 
 export default class NavbarMenu extends Component {
     render() {
         return(
-            <Menu>
-                <Menu.Item>
-                    <strong>Racheal and Gino's Budget</strong>
-                </Menu.Item>
-                <Menu.Item>
-                    Coming Soon...
+            <Menu fluid={true}>
+                <Menu.Item onClick={() => 0} icon="home"/>
+                <Menu.Item onClick={() => 0} name="Budgets"/>
+                <Menu.Item onClick={() => 0} name="Settings"/>
+                <Menu.Item borderless position="right">
+                    <MonthSelector/>
                 </Menu.Item>
             </Menu>
         )
