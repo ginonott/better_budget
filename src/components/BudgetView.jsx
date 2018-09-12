@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import { Segment, Statistic, Divider, Button, Loader, Container } from 'semantic-ui-react';
 import { getMonthlyBudget } from '../reducers/budget.action';
 import STATUSES from '../constants/status';
+import { setTagFilter } from '../reducers/transactions.action';
 
 function getBudgetBreakdown(transactionsById) {
     const budgetBreakdown = {
@@ -32,12 +33,6 @@ function getBudgetBreakdown(transactionsById) {
     return budgetBreakdown;
 }
 
-class EditBudget extends Component {
-
-}
-
-const EditBudgetConnected = connect()(EditBudget);
-
 class BudgetView extends Component {
     componentDidMount() {
         const year = this.props.selectedDate.getFullYear();
@@ -66,23 +61,23 @@ class BudgetView extends Component {
         const moneyRemaining = this.props.budget.income - this.props.budget.savingsGoal - this.props.budgetBreakdown.totalSpent;
         const {totalSpent} = this.props.budgetBreakdown;
         return (
-            <Segment>
-                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
-                    <Statistic size="small">
+            <Segment id="budget-stats">
+                <div className="budget-view-stats">
+                    <Statistic size="tiny">
                         <Statistic.Value>${this.props.budget.income.toFixed(2)}</Statistic.Value>
                         <Statistic.Label>Income</Statistic.Label>
                     </Statistic>
-                    <Statistic size="small">
+                    <Statistic size="tiny">
                         <Statistic.Value>${this.props.budget.savingsGoal.toFixed(2)}</Statistic.Value>
                         <Statistic.Label>Savings Goal</Statistic.Label>
                     </Statistic>
-                    <Statistic size="small">
+                    <Statistic size="tiny">
                         <Statistic.Value style={{color: '#721c24'}}>
                             ${totalSpent.toFixed(2)}
                         </Statistic.Value>
                         <Statistic.Label>Total Spent</Statistic.Label>
                     </Statistic>
-                    <Statistic size="small">
+                    <Statistic size="tiny">
                         <Statistic.Value style={{color: moneyRemaining > 0 ? 'seagreen' : 'red'}}>
                             ${moneyRemaining.toFixed(2)}
                         </Statistic.Value>
@@ -92,7 +87,7 @@ class BudgetView extends Component {
                 <Divider/>
                 <div>
                     {Object.entries(this.props.budgetBreakdown.spentByCategory)
-                        .sort(([tag1, cost1],[tag2, cost2]) => cost2 - cost1)
+                        .sort(([_, cost1],[__, cost2]) => cost2 - cost1)
                         .map(([tag, cost]) => {
                         const colors = {
                             low: {color: 'seagreen', background: 'darkseagreen'},
@@ -106,9 +101,12 @@ class BudgetView extends Component {
                                       : costPercent >= 33 ? colors.medium
                                       : colors.low;
                         return (
-                            <div style={{width: '100%', marginBottom: '1rem', height: '3rem', display: 'flex', flexDirection: 'row'}} className="budget-category">
+                            <div
+                                key={`budget-${tag}`}
+                                style={{width: '100%', marginBottom: '1rem', height: '3rem', display: 'flex', flexDirection: 'row'}}
+                                className="budget-category">
                                 <div className="budget-name" style={{width: '20%', margin: 'auto', textOverflow: 'ellipsis'}}>
-                                    <strong>{tag}</strong>
+                                    <a style={{cursor: 'pointer'}} onClick={this.props.setTagFilter.bind(null, tag)}>{tag}</a>
                                 </div>
                                 <div className="budget-bar" style={{width: '80%', display: 'flex', flexDirection: 'row'}}>
                                     <div style={{
@@ -118,9 +116,10 @@ class BudgetView extends Component {
                                         background: color.background,
                                         width: `${totalSpent === 0 ? 0 : (costPercent)}%`,
                                         display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'center',
-                                            paddingRight: '1rem',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        paddingRight: '1rem',
+                                        transition: 'width 2s ease-in'
                                         }}>
                                         <strong>{costPercent > 80 ? `$${cost.toFixed(2)} (${costPercent.toFixed(0)}%)` : null}</strong>
                                     </div>
@@ -145,10 +144,6 @@ class BudgetView extends Component {
                     })}
                 </div>
                 <Divider/>
-                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', paddingBottom: '12px'}}>
-                    <Button> Edit Default Budget </Button>
-                    <Button> Edit Monthly Budget </Button>
-                </div>
             </Segment>
         )
     }
@@ -162,5 +157,9 @@ export default connect(state => ({
 }), dispatch => ({
     loadMonthlyBudget: (year, month) => {
         dispatch(getMonthlyBudget(year, month));
+    },
+    setTagFilter: tag => {
+        dispatch(setTagFilter(tag));
+        window.location.hash = 'transactions';
     }
 }))(BudgetView);

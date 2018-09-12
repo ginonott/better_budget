@@ -13,6 +13,7 @@ const defaultState = Object.freeze({
         transactionsById: {},
         status: STATUSES.NOT_STARTED,
         selectedDate: new Date(),
+        tagFilter: 'All',
         error: null
     },
     transactionAdder: {
@@ -85,6 +86,13 @@ function transactionReducer(state = defaultState.transactions, action) {
             return {
                 ...state,
                 selectedDate: action.payload.selectedDate
+            }
+        }
+
+        case TRANSACTION_TYPES.SET_TAG_FILTER: {
+            return {
+                ...state,
+                tagFilter: action.payload
             }
         }
     }

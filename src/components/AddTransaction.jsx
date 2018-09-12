@@ -16,6 +16,14 @@ class AddTransaction extends Component {
             value = Number(value);
         }
 
+        if (prop === 'tags') {
+            if (value === '') {
+                value = []
+            } else {
+                value = [value];
+            }
+        }
+
         this.props.setTransactionAdderState({
             [prop]: value
         });
@@ -27,8 +35,8 @@ class AddTransaction extends Component {
     }
 
     render() {
-        const tagOptions = this.props.tagOptions.map(tag => (
-            {key: tag, value: tag, text: tag}
+        const tagOptions = ['', ...this.props.tagOptions.sort((t1, t2) => t1 >= t2)].map(tag => (
+            {key: tag, value: tag, text: tag === '' ? 'None' : tag}
         ));
 
         const {
@@ -54,14 +62,14 @@ class AddTransaction extends Component {
                         onChange={this.onInputChange.bind(null, 'cost')}/>
                     <Input type="date" value={moment(date).format('YYYY-MM-DD')}
                         onChange={this.onInputChange.bind(null, 'date')}/>
-                    <Dropdown fluid multiple search selection options={tagOptions} placeholder="Tags..."
-                        value={tags}
+                    <Dropdown fluid search selection options={tagOptions} placeholder="Tags..."
+                        value={tags[0] || ''}
                         onChange={this.onInputChange.bind(null, 'tags')}/>
                 </div>
                 <br/>
                 <div>
                     <Button loading={this.props.status === STATUSES.STARTED} onClick={this.createTransaction}>
-                        {id.length > 0 ? 'Edit' : 'Add'} Transaction
+                        {id.length > 0 ? 'Save' : 'Add'} Transaction
                     </Button>
                     {id.length > 0 ? (
                         <Button onClick={this.props.setTransactionAdderState.bind(null, {

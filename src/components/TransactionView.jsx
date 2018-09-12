@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { Segment, Header, Table, Label, Button, Divider, Dropdown, Loader, Input} from 'semantic-ui-react';
 import moment from 'moment';
-import { removeTransaction, changeDate, setTransactionAdder, loadTransactions } from '../reducers/transactions.action';
+import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter } from '../reducers/transactions.action';
 import STATUSES from '../constants/status';
 import {getDateRange} from '../util';
 
@@ -59,11 +59,15 @@ class TransactionView extends Component {
 
     editTransaction = transaction => {
         this.props.setTransactionAdder(transaction);
-        window.scrollTo(0, 0);
+        window.location.hash = '#add-trans';
     }
 
     dateChanged = (e, {value}) => {
         this.props.changeDate(new Date(this.props.selectedDate.getFullYear(), value, 1));
+    }
+
+    tagFilterChanged = (e, {value}) => {
+        this.props.setTagFilter(value);
     }
 
     render() {
@@ -76,10 +80,17 @@ class TransactionView extends Component {
                 text: moment(new Date(new Date().getFullYear(), month, 1)).format('MMMM')
             }));
 
+        const tagOptions = ['All', 'Uncategorized', ...this.props.tags.sort((t1, t2) => t1 >= t2)].map(t => ({
+            key: t,
+            value: t,
+            text: t
+        }));
+
         return (
-            <Segment className="transaction-view">
+            <Segment id="transactions" className="transaction-view">
                 <div className="transaction-header">
-                    <Dropdown loading={this.props.loading} onChange={this.dateChanged} value={this.props.selectedDate.getMonth()} selection compact options={months}/>
+                    <Dropdown loading={this.props.loading} onChange={this.dateChanged} value={this.props.selectedDate.getMonth()} selection options={months}/>
+                    <Dropdown onChange={this.tagFilterChanged} value={this.props.tagFilter} selection options={tagOptions}/>
                 </div>
                 <Divider/>
                 <div className="transaction-list">
@@ -94,7 +105,16 @@ class TransactionView extends Component {
                             </Table.Row>
                         </Table.Header>
                         <Table.Body>
-                            {this.props.transactions.length > 0 ? this.props.transactions.map(t => (
+                            {this.props.transactions.length > 0 ? this.props.transactions
+                                .filter(t => (
+                                    (this.props.tagFilter === 'Uncategorized' && t.tags.length === 0)
+                                    || this.props.tagFilter === 'All'
+                                    || t.tags.includes(this.props.tagFilter)
+                                ))
+                                .sort((t1, t2) => (
+                                    t2.date.getTime() - t1.date.getTime()
+                                ))
+                                .map(t => (
                                 <TransactionRow
                                     key={t.id}
                                     transaction={t}
@@ -102,7 +122,7 @@ class TransactionView extends Component {
                                     removeTransaction={this.props.removeTransaction}
                                     setDeleteStatus={this.setDeleteStatus}
                                     editTransaction={this.editTransaction}
-                                    readOnly={this.props.edittingTransaction}
+                                    readOnly={Boolean(this.props.edittingTransaction)}
                                     />
                             )) : (
                                 <Table.Row>
@@ -123,7 +143,9 @@ export default connect(state => ({
     transactions: Object.values(state.transactions.transactionsById),
     loading: state.transactions.status === STATUSES.STARTED,
     selectedDate: state.transactions.selectedDate,
-    edittingTransaction: state.transactionAdder.transaction.id
+    edittingTransaction: state.transactionAdder.transaction.id,
+    tagFilter: state.transactions.tagFilter,
+    tags: state.tags
 }), dispatch => ({
     removeTransaction: id => {
         dispatch(removeTransaction(id));
@@ -136,5 +158,8 @@ export default connect(state => ({
     },
     loadTransactions: dateRange => {
         dispatch(loadTransactions(dateRange));
+    },
+    setTagFilter: tag => {
+        dispatch(setTagFilter(tag));
     }
 }))(TransactionView);

@@ -28,8 +28,8 @@ class LoggedInApp extends Component {
     return (
       <React.Fragment>
         <NavbarMenu/>
-        <BudgetView/>
         <AddTransaction/>
+        <BudgetView/>
         <TransactionView/>
       </React.Fragment>
     )

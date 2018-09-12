@@ -42,6 +42,20 @@
   .transaction-header {
     flex-direction: row;
     align-content: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.budget-view-stats {
+  display: 'flex';
+  flex-direction: 'column';
+}
+
+@media (min-width: 720px) {
+  .budget-view-stats {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
   }
 }
 
@@ -53,6 +67,11 @@
 }
 
 .transaction-adder-form .input {
+  margin: 0.8rem;
+  justify-content: center;
+}
+
+.transaction-adder-form .dropdown {
   margin: 0.8rem;
   justify-content: center;
 }
