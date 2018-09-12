@@ -1,0 +1,42 @@
+import React, {Component} from 'react';
+import { connect } from 'react-redux';
+import { Segment, Header, Item, Button } from 'semantic-ui-react';
+import { removeAlert } from "../reducers/alerts.action";
+
+const Alert = ({msg, id, type, removeAlert}) => (
+    <Segment className={`alert ${type.toLowerCase()}`}>
+        <div className="alert-heading">
+            <Header>Uh Oh...</Header>
+            <Button icon="close" onClick={removeAlert.bind(null, id)} className={`alert-close-btn ${type.toLowerCase()}`}/>
+        </div>
+        <div className="alert-body">
+            <p>{msg}</p>
+        </div>
+    </Segment>
+);
+
+class AlertCenter extends Component {
+    render() {
+        if (this.props.alerts.length === 0) {
+            return null;
+        }
+
+        return (
+            <React.Fragment>
+                {this.props.alerts.map(alert => <Alert key={alert.id} {...alert} removeAlert={this.props.removeAlert}/>)}
+            </React.Fragment>
+        );
+    }
+}
+
+const mapStateToProps = state => ({
+    alerts: state.alerts.alerts
+});
+
+const mapDispatchToProps = dispatch => ({
+    removeAlert: id => {
+        dispatch(removeAlert(id))
+    }
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(AlertCenter);

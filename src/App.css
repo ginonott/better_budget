@@ -1,0 +1,87 @@
+.App {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  height: 100%;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* TransactionView */
+.transaction-header {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+}
+
+@media (min-width: 720px) {
+  .transaction-header {
+    flex-direction: row;
+    align-content: flex-start;
+  }
+}
+
+/* AddTransaction */
+.transaction-adder-form {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+}
+
+.transaction-adder-form .input {
+  margin: 0.8rem;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .transaction-adder-form {
+    flex-direction: row;
+  }
+}
+
+.alert {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.alert.danger {
+  background-color: lightpink;
+  border-color: pink;
+}
+
+.alert-heading {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.alert-body {
+  width: 100%;
+  text-align: left;
+}
