@@ -22,7 +22,9 @@ class Login extends Component {
     }
 
     keyPress = e => {
-        e.key === 'Enter' ? this.loginPressed() : null;
+        if (e.key === 'Enter') {
+            this.loginPressed();
+        }
     }
 
     setUsername = (e, {value: username}) => {

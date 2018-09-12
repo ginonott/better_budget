@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import budgetReducer from './reducers/app.reducer';
 import { createStore, applyMiddleware, compose } from 'redux';
@@ -10,7 +9,7 @@ import AddTransaction from './components/AddTransaction';
 import NavbarMenu from './components/NavbarMenu';
 import AlertCenter from './components/AlertCenter';
 import Login from './components/Login';
-import {checkAuth, AUTH_TYPES} from './reducers/auth.action';
+import {checkAuth} from './reducers/auth.action';
 import firebase from 'firebase';
 import BudgetView from './components/BudgetView';
 

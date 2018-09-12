@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import { Segment, Statistic, Divider, Button, Loader, Container } from 'semantic-ui-react';
+import { Segment, Statistic, Divider, Loader, Container } from 'semantic-ui-react';
 import { getMonthlyBudget } from '../reducers/budget.action';
 import STATUSES from '../constants/status';
 import { setTagFilter } from '../reducers/transactions.action';

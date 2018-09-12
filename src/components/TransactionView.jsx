@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { Segment, Header, Table, Label, Button, Divider, Dropdown, Loader, Input} from 'semantic-ui-react';
+import { Segment, Table, Label, Button, Divider, Dropdown} from 'semantic-ui-react';
 import moment from 'moment';
 import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter } from '../reducers/transactions.action';
 import STATUSES from '../constants/status';
@@ -127,7 +127,7 @@ class TransactionView extends Component {
                             )) : (
                                 <Table.Row>
                                     <Table.Cell width={6}>
-                                       There doesn't appear to be any transactions... 🤔
+                                       There doesn't appear to be any transactions... <span role="img" aria-label="pensive">🤔</span>
                                     </Table.Cell>
                                 </Table.Row>
                             )}

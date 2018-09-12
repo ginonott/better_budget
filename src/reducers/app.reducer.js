@@ -95,9 +95,11 @@ function transactionReducer(state = defaultState.transactions, action) {
                 tagFilter: action.payload
             }
         }
-    }
 
-    return state;
+        default: {
+            return {...state};
+        }
+    }
 }
 
 function transactionAdderReducer(state = defaultState.transactionAdder, action) {
@@ -143,9 +145,11 @@ function transactionAdderReducer(state = defaultState.transactionAdder, action) 
                 }
             }
         }
-    }
 
-    return state;
+        default: {
+            return {...state};
+        }
+    }
 }
 
 function alertReducer(state = defaultState.alerts, action) {
@@ -165,9 +169,11 @@ function alertReducer(state = defaultState.alerts, action) {
             newState.alerts = state.alerts.filter(alert => alert.id !== action.payload.alertId);
             return newState;
         }
-    }
 
-    return newState;
+        default: {
+            return {...newState};
+        }
+    }
 }
 
 function authReducer(state = defaultState.user, action) {
@@ -199,8 +205,11 @@ function authReducer(state = defaultState.user, action) {
         case AUTH_TYPES.LOGOUT: {
             return {...defaultState.user};
         }
+
+        default: {
+            return {...state};
+        }
     }
-    return state;
 }
 
 function monthlyBudgetReducer(state = defaultState.budget, action) {
@@ -225,9 +234,11 @@ function monthlyBudgetReducer(state = defaultState.budget, action) {
                 monthlyBudget: action.payload
             }
         }
-    }
 
-    return state;
+        default: {
+            return {...state};
+        }
+    }
 }
 
 function budgetReducer(state = defaultState, action) {

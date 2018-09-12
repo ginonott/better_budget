@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { Menu, Header } from 'semantic-ui-react';
+import { Menu } from 'semantic-ui-react';
 
 export default class NavbarMenu extends Component {
     render() {
