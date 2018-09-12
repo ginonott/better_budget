@@ -1,7 +1,6 @@
 language: node_js
 node_js:
   - "node"
-before_install: "rm package-lock.json"
 before_deploy: "npm run build"
 deploy:
   provider: firebase
