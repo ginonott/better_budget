@@ -43,12 +43,14 @@ exports.scheduleRequest = functions.https.onRequest(function (_, response) {
 
             // run it then schedule
             if (nextRun.getTime() < Date.now()) {
+                console.log('Scheduling ' + st.name);
                 // its past the time now, add the transaction in
                 promises.push(transactionsRef.doc().set(
                     Object.assign({}, st.transaction, { date: nextRun })
                 ).then(function () {
+                    console.log('Added transactions ' + st.name + '. Re-scheduling it...');
                     let nextOne = scheduleTransaction(nextRun, st.every);
-
+                    console.log('Scheduling it for ' + nextOne);
                     return scheduledTransactionsRef.doc(doc.id).set(Object.assign({}, st, { nextRun: nextOne }));
                 }));
             } else {
@@ -59,5 +61,7 @@ exports.scheduleRequest = functions.https.onRequest(function (_, response) {
         });
     }).then(function () {
         return response.send('Done');
+    }).catch(function () {
+        return response.status(500).send('Oh no. Check the log');
     });
 });

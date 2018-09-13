@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { addTransaction, setTransactionAdder, loadTransactions } from '../reducers/transactions.action';
 import STATUSES from '../constants/status';
 import moment from 'moment';
-import { getDateRange } from '../util';
+import { getDateRange, isDateBefore } from '../util';
 
 class AddTransaction extends Component {
     constructor(props) {
@@ -19,6 +19,12 @@ class AddTransaction extends Component {
     setReoccuring = showReoccuring => {
         console.log(showReoccuring);
         this.setState({ showReoccuring })
+
+        if (showReoccuring && isDateBefore(this.props.transaction.date, new Date())) {
+            this.props.setTransactionAdderState({
+                date: new Date()
+            });
+        }
     }
 
     setOccursOn = (_, { value }) => {
@@ -28,6 +34,10 @@ class AddTransaction extends Component {
     onInputChange = (prop, _, { value }) => {
         if (prop === 'date') {
             value = moment(value, 'YYYY-MM-DD').toDate();
+
+            if (this.state.showReoccuring && isDateBefore(value, new Date())) {
+                value = new Date();
+            }
         }
 
         if (prop === 'cost') {
