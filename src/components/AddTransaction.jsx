@@ -17,7 +17,6 @@ class AddTransaction extends Component {
     }
 
     setReoccuring = showReoccuring => {
-        console.log(showReoccuring);
         this.setState({ showReoccuring })
 
         if (showReoccuring && isDateBefore(this.props.transaction.date, new Date())) {
@@ -67,7 +66,7 @@ class AddTransaction extends Component {
                 }
             }
             this.props.addTransaction(reoccuringTransaction);
-            this.setOccursOn(null, { value: false });
+            this.setReoccuring(false);
         } else {
             this.props.addTransaction(this.props.transaction);
             this.props.loadTransactions(this.props.selectedDate);
