@@ -39,6 +39,7 @@ exports.scheduleRequest = functions.https.onRequest(function (_, response) {
         scheduledTransactionsQuerySnapshot.forEach(function (doc) {
             let st = doc.data();
             let nextRun = st.nextRun ? st.nextRun : st.startingDate;
+            nextRun.setHours(0, 0, 0, 0);
             let promises = [];
 
             // run it then schedule
