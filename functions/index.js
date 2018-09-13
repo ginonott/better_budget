@@ -32,39 +32,34 @@ function scheduleTransaction(date, reoccurance) {
 // Create and Deploy Your First Cloud Functions
 // https://firebase.google.com/docs/functions/write-firebase-functions
 
-exports.scheduleRequest = functions.https.onRequest(async (_, response) => {
+exports.scheduleRequest = functions.https.onRequest(function (_, response) {
     const transactionsRef = db.collection('transactions');
     const scheduledTransactionsRef = db.collection('scheduledTransactions');
-    const scheduledTransactionsQuerySnapshot = await scheduledTransactionsRef.get();
+    scheduledTransactionsRef.get().then(function (scheduledTransactionsQuerySnapshot) {
+        scheduledTransactionsQuerySnapshot.forEach(function (doc) {
+            let st = doc.data();
+            let nextRun = st.nextRun ? st.nextRun.toDate() : st.startingDate.toDate();
+            let promises = [];
 
-    scheduledTransactionsQuerySnapshot.forEach(doc => {
-        let st = doc.data();
-        let nextRun = st.nextRun ? st.nextRun.toDate() : st.startingDate.toDate();
-        let errors = [];
-
-        // run it then schedule
-        if (nextRun.getTime() < Date.now()) {
-            // its past the time now, add the transaction in
-            try {
-                await transactionsRef.doc().set({
+            // run it then schedule
+            if (nextRun.getTime() < Date.now()) {
+                // its past the time now, add the transaction in
+                promises.push(transactionsRef.doc().set({
                     ...st.transaction,
                     date: nextRun
-                });
+                }).then(function () {
+                    let nextOne = scheduleTransaction(nextRun, st.every);
 
-                // success, schedule the next one
-                let nextOne = scheduleTransaction(nextRun, st.every);
-
-                await scheduledTransactionsRef.doc(doc.id).set({
-                    ...st,
-                    nextRun: nextOne
-                });
-            } catch (e) {
-                errors.push(e.message);
+                    return scheduledTransactionsRef.doc(doc.id).set({
+                        ...st,
+                        nextRun: nextOne
+                    });
+                }));
             }
-        }
 
-
+            return Promise.all(promises);
+        });
+    }).then(function () {
+        response.send('Done');
     });
-
-    response.send(JSON.stringify({ status: errors.length === 0 ? 'Good!' : 'Not good', errors }));
 });
