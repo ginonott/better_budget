@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Input, Segment, Button, Dropdown, Checkbox, Divider } from 'semantic-ui-react';
+import { Input, Segment, Button, Dropdown, Checkbox } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { addTransaction, setTransactionAdder, loadTransactions } from '../reducers/transactions.action';
 import STATUSES from '../constants/status';

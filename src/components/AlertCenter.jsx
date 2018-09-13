@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Segment, Header, Button } from 'semantic-ui-react';
+import { Segment, Button } from 'semantic-ui-react';
 import { removeAlert } from "../reducers/alerts.action";
 
 const Alert = ({ msg, id, type, removeAlert }) => (
