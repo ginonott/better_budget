@@ -38,7 +38,7 @@ exports.scheduleRequest = functions.https.onRequest(function (_, response) {
     scheduledTransactionsRef.get().then(function (scheduledTransactionsQuerySnapshot) {
         scheduledTransactionsQuerySnapshot.forEach(function (doc) {
             let st = doc.data();
-            let nextRun = st.nextRun ? st.nextRun.toDate() : st.startingDate.toDate();
+            let nextRun = st.nextRun ? st.nextRun : st.startingDate;
             let promises = [];
 
             // run it then schedule
