@@ -1,15 +1,14 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Segment, Header, Button } from 'semantic-ui-react';
 import { removeAlert } from "../reducers/alerts.action";
 
-const Alert = ({msg, id, type, removeAlert}) => (
+const Alert = ({ msg, id, type, removeAlert }) => (
     <Segment className={`alert ${type.toLowerCase()}`}>
         <div className="alert-heading">
-            <Header>Uh Oh...</Header>
-            <Button icon="close" onClick={removeAlert.bind(null, id)} className={`alert-close-btn ${type.toLowerCase()}`}/>
+            <Button icon="close" onClick={removeAlert.bind(null, id)} className={`alert-close-btn ${type.toLowerCase()}`} />
         </div>
-        <div className="alert-body">
+        <div className={`alert-body ${type.toLowerCase()}`}>
             <p>{msg}</p>
         </div>
     </Segment>
@@ -23,7 +22,7 @@ class AlertCenter extends Component {
 
         return (
             <React.Fragment>
-                {this.props.alerts.map(alert => <Alert key={alert.id} {...alert} removeAlert={this.props.removeAlert}/>)}
+                {this.props.alerts.map(alert => <Alert key={alert.id} {...alert} removeAlert={this.props.removeAlert} />)}
             </React.Fragment>
         );
     }

@@ -1,3 +1,5 @@
+import STATUSES from "../constants/status";
+
 export const ALERT_SEVERITY = {
     DANGER: 'DANGER',
     WARNING: 'WARNING',
@@ -12,6 +14,19 @@ export const ALERT_TYPES = {
 export function removeAlert(alertId) {
     return {
         type: ALERT_TYPES.REMOVE_ALERT,
-        payload: {alertId}
+        payload: { alertId }
+    }
+}
+
+export function addAlert(message, severity = ALERT_SEVERITY.DANGER) {
+    return {
+        type: '',
+        payload: {
+            error: new Error(message),
+            severity
+        },
+        meta: {
+            status: STATUSES.FAILED
+        }
     }
 }

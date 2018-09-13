@@ -76,6 +76,17 @@
   justify-content: center;
 }
 
+.reoccuring-cb {
+  height: 100%;
+  margin: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  vertical-align: middle;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
 @media (min-width: 1024px) {
   .transaction-adder-form {
     flex-direction: row;

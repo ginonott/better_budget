@@ -1,16 +1,16 @@
 import STATUSES from "../constants/status";
 import { TRANSACTION_TYPES } from "./transactions.action";
 import { ALERT_SEVERITY, ALERT_TYPES } from "./alerts.action";
-import {AUTH_TYPES} from './auth.action';
+import { AUTH_TYPES } from './auth.action';
 import { BUDGET_TYPES } from "./budget.action";
 
 const defaultState = Object.freeze({
     tags: [
-            'Drinks', 'Restaurants', 'Snacks',
-            'Pets', 'Bills', 'Home', 'Laundry',
-            'Health', 'Groceries', 'Entertainment',
-            'Clothing', 'Gifts'
-        ],
+        'Drinks', 'Restaurants', 'Snacks',
+        'Pets', 'Bills', 'Home', 'Laundry',
+        'Health', 'Groceries', 'Entertainment',
+        'Clothing', 'Gifts'
+    ],
     alerts: {
         alerts: []
     },
@@ -47,7 +47,7 @@ const defaultState = Object.freeze({
 });
 
 function transactionReducer(state = defaultState.transactions, action) {
-    switch(action.type) {
+    switch (action.type) {
         case TRANSACTION_TYPES.LOAD_TRANSACTIONS: {
             if (action.meta.status === STATUSES.FAILED) {
                 return {
@@ -78,7 +78,7 @@ function transactionReducer(state = defaultState.transactions, action) {
         }
 
         case TRANSACTION_TYPES.REMOVE_TRANSACTION: {
-            let newState = {...state};
+            let newState = { ...state };
 
             if (action.meta.status === STATUSES.FINISHED) {
                 delete newState.transactionsById[action.payload.transactionId];
@@ -102,13 +102,13 @@ function transactionReducer(state = defaultState.transactions, action) {
         }
 
         default: {
-            return {...state};
+            return { ...state };
         }
     }
 }
 
 function transactionAdderReducer(state = defaultState.transactionAdder, action) {
-    switch(action.type) {
+    switch (action.type) {
         case TRANSACTION_TYPES.ADD_TRANSACTION: {
             if (action.meta.status === STATUSES.FAILED) {
                 return {
@@ -119,7 +119,7 @@ function transactionAdderReducer(state = defaultState.transactionAdder, action) 
             }
 
             if (action.meta.status === STATUSES.FINISHED) {
-                return Object.assign(defaultState.transactionAdder, {status: action.meta.status, date: state.date});
+                return Object.assign(defaultState.transactionAdder, { status: action.meta.status, date: state.date });
             }
 
             return {
@@ -152,37 +152,37 @@ function transactionAdderReducer(state = defaultState.transactionAdder, action) 
         }
 
         default: {
-            return {...state};
+            return { ...state };
         }
     }
 }
 
 function alertReducer(state = defaultState.alerts, action) {
-    const newState = {...state};
+    const newState = { ...state };
 
     if (action && action.meta && action.meta.status === STATUSES.FAILED) {
         newState.alerts = [{
-                msg: action.payload.error.message,
-                expires: Date.now() + 60000,
-                id: Math.floor(Math.random() * 10000000),
-                type: ALERT_SEVERITY.DANGER
-            }, ...state.alerts];
+            msg: action.payload.error.message,
+            expires: Date.now() + 60000,
+            id: Math.floor(Math.random() * 10000000),
+            type: action.payload.severity || ALERT_SEVERITY.DANGER
+        }, ...state.alerts];
     }
 
-    switch(action.type) {
+    switch (action.type) {
         case ALERT_TYPES.REMOVE_ALERT: {
             newState.alerts = state.alerts.filter(alert => alert.id !== action.payload.alertId);
             return newState;
         }
 
         default: {
-            return {...newState};
+            return { ...newState };
         }
     }
 }
 
 function authReducer(state = defaultState.user, action) {
-    switch(action.type) {
+    switch (action.type) {
         case AUTH_TYPES.LOGIN: {
             if (action.meta.status === STATUSES.FAILED) {
                 return {
@@ -208,17 +208,17 @@ function authReducer(state = defaultState.user, action) {
         }
 
         case AUTH_TYPES.LOGOUT: {
-            return {...defaultState.user};
+            return { ...defaultState.user };
         }
 
         default: {
-            return {...state};
+            return { ...state };
         }
     }
 }
 
 function monthlyBudgetReducer(state = defaultState.budget, action) {
-    switch(action.type) {
+    switch (action.type) {
         case BUDGET_TYPES.GET_MONTHLY_BUDGET: {
             if (action.meta.status === STATUSES.FAILED) {
                 return {
@@ -241,13 +241,13 @@ function monthlyBudgetReducer(state = defaultState.budget, action) {
         }
 
         default: {
-            return {...state};
+            return { ...state };
         }
     }
 }
 
 function budgetReducer(state = defaultState, action) {
-    const newState = {...state};
+    const newState = { ...state };
 
     return {
         ...newState,

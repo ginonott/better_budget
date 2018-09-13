@@ -1,13 +1,31 @@
-import React, {Component} from 'react';
-import {Input, Segment, Button, Dropdown } from 'semantic-ui-react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { Input, Segment, Button, Dropdown, Checkbox, Divider } from 'semantic-ui-react';
+import { connect } from 'react-redux';
 import { addTransaction, setTransactionAdder, loadTransactions } from '../reducers/transactions.action';
 import STATUSES from '../constants/status';
 import moment from 'moment';
-import {getDateRange} from '../util';
+import { getDateRange } from '../util';
 
 class AddTransaction extends Component {
-    onInputChange = (prop, _, {value}) => {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            showReoccuring: false,
+            reoccursOn: 'Day'
+        }
+    }
+
+    setReoccuring = showReoccuring => {
+        console.log(showReoccuring);
+        this.setState({ showReoccuring })
+    }
+
+    setOccursOn = (_, { value }) => {
+        this.setState({ reoccursOn: value });
+    }
+
+    onInputChange = (prop, _, { value }) => {
         if (prop === 'date') {
             value = moment(value, 'YYYY-MM-DD').toDate();
         }
@@ -30,13 +48,42 @@ class AddTransaction extends Component {
     }
 
     createTransaction = () => {
-        this.props.addTransaction(this.props.transaction);
-        this.props.loadTransactions(this.props.selectedDate);
+        if ((!this.props.transaction.id || this.props.transaction.id !== '') && this.state.showReoccuring) {
+            const reoccuringTransaction = {
+                ...this.props.transaction,
+                reoccursOn: {
+                    every: this.state.reoccursOn,
+                    startingDate: this.props.transaction.date
+                }
+            }
+            this.props.addTransaction(reoccuringTransaction);
+            this.setOccursOn(null, { value: false });
+        } else {
+            this.props.addTransaction(this.props.transaction);
+            this.props.loadTransactions(this.props.selectedDate);
+        }
+    }
+
+    renderReoccuringTransaction = () => {
+        const options = ['Day', 'Week', 'Month'].map(x => ({ key: x, value: x, text: x }));
+        const date = moment(this.props.transaction.date).format('MMMM Do');
+
+        return (
+            <React.Fragment>
+                <br />
+                <div>
+                    <span>Reoccurs every </span>
+                    <span><Dropdown inline onChange={this.setOccursOn} value={this.state.reoccursOn} options={options} /> </span>
+                    <span>starting on <strong>{date}</strong> </span>
+                </div>
+                <br />
+            </React.Fragment>
+        )
     }
 
     render() {
         const tagOptions = ['', ...this.props.tagOptions.sort((t1, t2) => t1 >= t2)].map(tag => (
-            {key: tag, value: tag, text: tag === '' ? 'None' : tag}
+            { key: tag, value: tag, text: tag === '' ? 'None' : tag }
         ));
 
         const {
@@ -53,25 +100,28 @@ class AddTransaction extends Component {
                 <div className="transaction-adder-form">
                     <Input placeholder="Name..."
                         value={name}
-                        onChange={this.onInputChange.bind(null, 'name')}/>
+                        onChange={this.onInputChange.bind(null, 'name')} />
                     <Input placeholder="Description..."
                         value={description}
-                        onChange={this.onInputChange.bind(null, 'description')}/>
+                        onChange={this.onInputChange.bind(null, 'description')} />
                     <Input label="$" type="number" placeholder={Number(0).toFixed(2)}
                         value={cost === 0 ? '' : cost}
-                        onChange={this.onInputChange.bind(null, 'cost')}/>
+                        onChange={this.onInputChange.bind(null, 'cost')} />
                     <Input type="date" value={moment(date).format('YYYY-MM-DD')}
-                        onChange={this.onInputChange.bind(null, 'date')}/>
+                        onChange={this.onInputChange.bind(null, 'date')} />
                     <Dropdown fluid search selection options={tagOptions} placeholder="Tags..."
                         value={tags[0] || ''}
-                        onChange={this.onInputChange.bind(null, 'tags')}/>
+                        onChange={this.onInputChange.bind(null, 'tags')} />
+                    <div className="reoccuring-cb">
+                    </div>
                 </div>
-                <br/>
+                {this.state.showReoccuring && id === '' ? this.renderReoccuringTransaction() : null}
+                <br />
                 <div>
                     <Button loading={this.props.status === STATUSES.STARTED} onClick={this.createTransaction}>
                         {id.length > 0 ? 'Save' : 'Add'} Transaction
                     </Button>
-                    {id.length > 0 ? (
+                    {id !== '' ? (
                         <Button onClick={this.props.setTransactionAdderState.bind(null, {
                             id: '',
                             name: '',
@@ -82,7 +132,10 @@ class AddTransaction extends Component {
                         })}>
                             Cancel Edit
                         </Button>
-                    ): null}
+                    ) : null}
+                    {id === '' ? (
+                        <Checkbox label="Reoccuring" checked={this.state.showReoccuring} onChange={(e, data) => { this.setReoccuring(data.checked) }} />
+                    ) : null}
                 </div>
             </Segment>
         )

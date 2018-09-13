@@ -1,8 +1,9 @@
 import STATUSES from '../constants/status';
-import { TRANSACTIONS } from '../constants/database';
+import { TRANSACTIONS, SCHEDULED } from '../constants/database';
 import firebase from 'firebase';
 import { getDateRange } from '../util';
-import {asyncAction} from './async.action';
+import { asyncAction } from './async.action';
+import { addAlert, ALERT_SEVERITY } from './alerts.action';
 
 const db = firebase.firestore();
 
@@ -20,7 +21,7 @@ export const TRANSACTION_TYPES = {
  * @param {Date} from - the beginning range
  * @param {Date} to - the ending range
  */
-async function getTransactions({from, to}) {
+async function getTransactions({ from, to }) {
     const transactionsQuerySnapshot = await db.collection(TRANSACTIONS)
         .where('date', '>=', from)
         .where('date', '<=', to)
@@ -33,12 +34,12 @@ async function getTransactions({from, to}) {
         transactions.push(transaction);
     });
 
-    return transactions.map((t) => ({...t, date: t.date.toDate()}));
+    return transactions.map((t) => ({ ...t, date: t.date.toDate() }));
 }
 
-export const loadTransactions = ({from, to}) => async dispatch => {
+export const loadTransactions = ({ from, to }) => async dispatch => {
     asyncAction(dispatch, TRANSACTION_TYPES.LOAD_TRANSACTIONS, async () => {
-        const transactions = await getTransactions({from, to}) || [];
+        const transactions = await getTransactions({ from, to }) || [];
 
         return {
             from, to, transactions
@@ -58,19 +59,40 @@ async function addTransactionToDB(transaction) {
     };
 }
 
-export const addTransaction = transaction => async dispatch => {
-    if (transaction.name.length < 1 || transaction.date === 'Invalid Date' || transaction.cost === 0) {
+async function addReoccuringTransaction(transaction) {
+    await db.collection(SCHEDULED).doc().set({
+        every: transaction.reoccursOn.every,
+        startingDate: transaction.reoccursOn.startingDate,
+        transaction: {
+            name: transaction.name,
+            cost: transaction.cost,
+            description: transaction.description || '',
+            tags: transaction.tags
+        }
+    });
+    return {
+        result: 'Successfully upserted reoccuring transaction'
+    };
+}
+
+export const addTransaction = (transaction) => async dispatch => {
+    if (transaction.name.length < 1 || transaction.date === 'Invalid Date') {
         dispatch({
             type: '',
             payload: {
-                error: new Error('Invalid date, name, or cost. Please fix either of them and try again.')
+                error: new Error('Invalid date or name. Name must not be empty. Please fix either of them and try again.')
             },
             meta: {
                 status: STATUSES.FAILED
             }
         });
     } else {
-        await asyncAction(dispatch, TRANSACTION_TYPES.ADD_TRANSACTION, addTransactionToDB.bind(null, transaction));
+        if (transaction.reoccursOn) {
+            await asyncAction(dispatch, TRANSACTION_TYPES.ADD_TRANSACTION, addReoccuringTransaction.bind(null, transaction));
+            dispatch(addAlert('Successfully scheduled ' + transaction.name, ALERT_SEVERITY.SUCCESS));
+        } else {
+            await asyncAction(dispatch, TRANSACTION_TYPES.ADD_TRANSACTION, addTransactionToDB.bind(null, transaction));
+        }
     }
 
 
@@ -91,7 +113,7 @@ export const removeTransaction = transactionId => async dispatch => {
 export const changeDate = selectedDate => async dispatch => {
     dispatch({
         type: TRANSACTION_TYPES.CHANGE_DATE,
-        payload: {selectedDate}
+        payload: { selectedDate }
     });
     dispatch(loadTransactions(getDateRange(selectedDate)));
 }
