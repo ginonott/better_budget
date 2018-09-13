@@ -56,6 +56,6 @@ exports.scheduleRequest = functions.https.onRequest(function (_, response) {
             return Promise.all(promises);
         });
     }).then(function () {
-        response.send('Done');
+        return response.send('Done');
     });
 });
