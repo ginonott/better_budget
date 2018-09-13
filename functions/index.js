@@ -49,10 +49,7 @@ exports.scheduleRequest = functions.https.onRequest(function (_, response) {
                 ).then(function () {
                     let nextOne = scheduleTransaction(nextRun, st.every);
 
-                    return scheduledTransactionsRef.doc(doc.id).set({
-                        ...st,
-                        nextRun: nextOne
-                    });
+                    return scheduledTransactionsRef.doc(doc.id).set(Object.assign({}, st, { nextRun: nextOne }));
                 }));
             }
 
