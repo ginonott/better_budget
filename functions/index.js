@@ -44,10 +44,9 @@ exports.scheduleRequest = functions.https.onRequest(function (_, response) {
             // run it then schedule
             if (nextRun.getTime() < Date.now()) {
                 // its past the time now, add the transaction in
-                promises.push(transactionsRef.doc().set({
-                    ...st.transaction,
-                    date: nextRun
-                }).then(function () {
+                promises.push(transactionsRef.doc().set(
+                    Object.assign({}, st.transaction, { date: nextRun })
+                ).then(function () {
                     let nextOne = scheduleTransaction(nextRun, st.every);
 
                     return scheduledTransactionsRef.doc(doc.id).set({
