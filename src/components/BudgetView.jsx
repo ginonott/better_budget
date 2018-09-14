@@ -1,6 +1,6 @@
-import React, {Component} from 'react';
-import {connect} from 'react-redux';
-import { Segment, Statistic, Divider, Loader, Container } from 'semantic-ui-react';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { Segment, Statistic, Divider, Loader, Container, Button } from 'semantic-ui-react';
 import { getMonthlyBudget } from '../reducers/budget.action';
 import STATUSES from '../constants/status';
 import { setTagFilter } from '../reducers/transactions.action';
@@ -34,6 +34,20 @@ function getBudgetBreakdown(transactionsById) {
 }
 
 class BudgetView extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            collapsed: window.localStorage.getItem('better-budget.budget-view.collapsed') === 'true'
+        }
+    }
+
+    setCollapsed = collapsed => {
+        this.setState({ collapsed }, () => {
+            window.localStorage.setItem('better-budget.budget-view.collapsed', collapsed);
+        });
+    }
+
     componentDidMount() {
         const year = this.props.selectedDate.getFullYear();
         const month = this.props.selectedDate.getMonth();
@@ -43,7 +57,7 @@ class BudgetView extends Component {
         if (this.props.loading === STATUSES.STARTED) {
             return (
                 <Segment>
-                    <Loader active={true}/>
+                    <Loader active={true} />
                 </Segment>
             )
         }
@@ -59,7 +73,7 @@ class BudgetView extends Component {
         }
 
         const moneyRemaining = this.props.budget.income - this.props.budget.savingsGoal - this.props.budgetBreakdown.totalSpent;
-        const {totalSpent} = this.props.budgetBreakdown;
+        const { totalSpent } = this.props.budgetBreakdown;
         return (
             <Segment id="budget-stats">
                 <div className="budget-view-stats">
@@ -72,58 +86,59 @@ class BudgetView extends Component {
                         <Statistic.Label>Savings Goal</Statistic.Label>
                     </Statistic>
                     <Statistic size="tiny">
-                        <Statistic.Value style={{color: '#721c24'}}>
+                        <Statistic.Value style={{ color: '#721c24' }}>
                             ${totalSpent.toFixed(2)}
                         </Statistic.Value>
                         <Statistic.Label>Total Spent</Statistic.Label>
                     </Statistic>
                     <Statistic size="tiny">
-                        <Statistic.Value style={{color: moneyRemaining > 0 ? 'seagreen' : 'red'}}>
+                        <Statistic.Value style={{ color: moneyRemaining > 0 ? 'seagreen' : 'red' }}>
                             ${moneyRemaining.toFixed(2)}
                         </Statistic.Value>
                         <Statistic.Label>Money Remaining</Statistic.Label>
                     </Statistic>
                 </div>
-                <Divider/>
+                <Divider />
+                <Button icon={this.state.collapsed ? "plus" : "minus"} floated="right" onClick={this.setCollapsed.bind(null, !this.state.collapsed)} />
                 <div>
-                    {Object.entries(this.props.budgetBreakdown.spentByCategory)
-                        .sort(([_, cost1],[__, cost2]) => cost2 - cost1)
+                    {this.state.collapsed ? null : Object.entries(this.props.budgetBreakdown.spentByCategory)
+                        .sort(([_, cost1], [__, cost2]) => cost2 - cost1)
                         .map(([tag, cost]) => {
-                        const colors = {
-                            low: {color: 'seagreen', background: 'darkseagreen'},
-                            medium: {color: '#856404', background: '#fff3cd'},
-                            high: {color: '#721c24', background: '#f5c6cb'}
-                        }
+                            const colors = {
+                                low: { color: 'seagreen', background: 'darkseagreen' },
+                                medium: { color: '#856404', background: '#fff3cd' },
+                                high: { color: '#721c24', background: '#f5c6cb' }
+                            }
 
-                        const costPercent = totalSpent === 0 ? 0 : ((cost/totalSpent) * 100);
+                            const costPercent = totalSpent === 0 ? 0 : ((cost / totalSpent) * 100);
 
-                        const color = costPercent >= 66 ? colors.high
-                                      : costPercent >= 33 ? colors.medium
-                                      : colors.low;
-                        return (
-                            <div
-                                key={`budget-${tag}`}
-                                style={{width: '100%', marginBottom: '1rem', height: '3rem', display: 'flex', flexDirection: 'row'}}
-                                className="budget-category">
-                                <div className="budget-name" style={{width: '20%', margin: 'auto', textOverflow: 'ellipsis'}}>
-                                    <a style={{cursor: 'pointer'}} onClick={this.props.setTagFilter.bind(null, tag)}>{tag}</a>
-                                </div>
-                                <div className="budget-bar" style={{width: '80%', display: 'flex', flexDirection: 'row'}}>
-                                    <div style={{
-                                        height: "100%",
-                                        textAlign: 'right',
-                                        color: color.color,
-                                        background: color.background,
-                                        width: `${totalSpent === 0 ? 0 : (costPercent)}%`,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'center',
-                                        paddingRight: '1rem',
-                                        transition: 'width 2s ease-in'
-                                        }}>
-                                        <strong>{costPercent > 80 ? `$${cost.toFixed(2)} (${costPercent.toFixed(0)}%)` : null}</strong>
+                            const color = costPercent >= 66 ? colors.high
+                                : costPercent >= 33 ? colors.medium
+                                    : colors.low;
+                            return (
+                                <div
+                                    key={`budget-${tag}`}
+                                    style={{ width: '100%', marginBottom: '1rem', height: '3rem', display: 'flex', flexDirection: 'row' }}
+                                    className="budget-category">
+                                    <div className="budget-name" style={{ width: '20%', margin: 'auto', textOverflow: 'ellipsis' }}>
+                                        <a style={{ cursor: 'pointer' }} onClick={this.props.setTagFilter.bind(null, tag)}>{tag}</a>
                                     </div>
-                                    <div style={{
+                                    <div className="budget-bar" style={{ width: '80%', display: 'flex', flexDirection: 'row' }}>
+                                        <div style={{
+                                            height: "100%",
+                                            textAlign: 'right',
+                                            color: color.color,
+                                            background: color.background,
+                                            width: `${totalSpent === 0 ? 0 : (costPercent)}%`,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            paddingRight: '1rem',
+                                            transition: 'width 2s ease-in'
+                                        }}>
+                                            <strong>{costPercent > 80 ? `$${cost.toFixed(2)} (${costPercent.toFixed(0)}%)` : null}</strong>
+                                        </div>
+                                        <div style={{
                                             color: color.color,
                                             height: "100%",
                                             background: "white",
@@ -134,16 +149,15 @@ class BudgetView extends Component {
                                             justifyContent: 'center',
                                             paddingLeft: '1rem',
                                         }}>
-                                        <strong>
-                                            {costPercent <= 80 ? `$${cost.toFixed(2)} (${costPercent.toFixed(0)}%)` : null}
-                                        </strong>
+                                            <strong>
+                                                {costPercent <= 80 ? `$${cost.toFixed(2)} (${costPercent.toFixed(0)}%)` : null}
+                                            </strong>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )
-                    })}
+                            )
+                        })}
                 </div>
-                <Divider/>
             </Segment>
         )
     }
