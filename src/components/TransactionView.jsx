@@ -1,9 +1,9 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Segment, Table, Label, Button, Divider, Dropdown} from 'semantic-ui-react';
+import { Segment, Table, Label, Button, Divider, Dropdown } from 'semantic-ui-react';
 import moment from 'moment';
 import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter } from '../reducers/transactions.action';
-import {getDateRange} from '../util';
+import { getDateRange } from '../util';
 
 class TransactionRow extends Component {
     render() {
@@ -22,14 +22,14 @@ class TransactionRow extends Component {
                     ))}
                 </Table.Cell>
                 <Table.Cell>
-                    <div style={{display: 'flex', flexDirection: 'row'}}>
-                        <Button icon="pencil" disabled={this.props.readOnly} onClick={this.props.editTransaction.bind(null, this.props.transaction)}/>
+                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        <Button icon="pencil" disabled={this.props.readOnly} onClick={this.props.editTransaction.bind(null, this.props.transaction)} />
                         <Button loading={this.props.deleting}
                             disabled={this.props.readOnly}
-                            style={{color: 'red'}} icon="trash" onClick={() => {
-                            this.props.removeTransaction(this.props.transaction.id);
-                            this.props.setDeleteStatus(this.props.transaction.id);
-                        }}/>
+                            style={{ color: 'red' }} icon="trash" onClick={() => {
+                                this.props.removeTransaction(this.props.transaction.id);
+                                this.props.setDeleteStatus(this.props.transaction.id);
+                            }} />
                     </div>
                 </Table.Cell>
             </Table.Row>
@@ -61,7 +61,7 @@ class TransactionView extends Component {
         window.location.hash = '#add-trans';
     }
 
-    tagFilterChanged = (e, {value}) => {
+    tagFilterChanged = (e, { value }) => {
         this.props.setTagFilter(value);
     }
 
@@ -75,9 +75,10 @@ class TransactionView extends Component {
         return (
             <Segment id="transactions" className="transaction-view">
                 <div className="transaction-header">
-                    <span>Showing <Dropdown onChange={this.tagFilterChanged} value={this.props.tagFilter} inline options={tagOptions}/></span>
+                    <span>Showing <Dropdown onChange={this.tagFilterChanged} value={this.props.tagFilter} inline options={tagOptions} /></span>
+                    <Button loading={this.props.loading} icon="refresh" onClick={this.props.loadTransactions.bind(null, getDateRange(this.props.selectedDate))} />
                 </div>
-                <Divider/>
+                <Divider />
                 <div className="transaction-list">
                     <Table striped>
                         <Table.Header>
@@ -100,22 +101,22 @@ class TransactionView extends Component {
                                     t2.date.getTime() - t1.date.getTime()
                                 ))
                                 .map(t => (
-                                <TransactionRow
-                                    key={t.id}
-                                    transaction={t}
-                                    deleting={this.state.deletingTransactions.includes(t.id)}
-                                    removeTransaction={this.props.removeTransaction}
-                                    setDeleteStatus={this.setDeleteStatus}
-                                    editTransaction={this.editTransaction}
-                                    readOnly={Boolean(this.props.edittingTransaction)}
+                                    <TransactionRow
+                                        key={t.id}
+                                        transaction={t}
+                                        deleting={this.state.deletingTransactions.includes(t.id)}
+                                        removeTransaction={this.props.removeTransaction}
+                                        setDeleteStatus={this.setDeleteStatus}
+                                        editTransaction={this.editTransaction}
+                                        readOnly={Boolean(this.props.edittingTransaction)}
                                     />
-                            )) : (
-                                <Table.Row>
-                                    <Table.Cell width={6}>
-                                       There doesn't appear to be any transactions... <span role="img" aria-label="pensive">🤔</span>
-                                    </Table.Cell>
-                                </Table.Row>
-                            )}
+                                )) : (
+                                    <Table.Row>
+                                        <Table.Cell width={6}>
+                                            There doesn't appear to be any transactions... <span role="img" aria-label="pensive">🤔</span>
+                                        </Table.Cell>
+                                    </Table.Row>
+                                )}
                         </Table.Body>
                     </Table>
                 </div>
@@ -129,7 +130,8 @@ export default connect(state => ({
     selectedDate: state.transactions.selectedDate,
     edittingTransaction: state.transactionAdder.transaction.id,
     tagFilter: state.transactions.tagFilter,
-    tags: state.tags
+    tags: state.tags,
+    loading: state.transactions.status === 'STARTED'
 }), dispatch => ({
     removeTransaction: id => {
         dispatch(removeTransaction(id));

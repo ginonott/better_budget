@@ -55,7 +55,7 @@ exports.scheduleRequest = functions.https.onRequest(function (_, response) {
                     return scheduledTransactionsRef.doc(doc.id).set(Object.assign({}, st, { nextRun: nextOne }));
                 }));
             } else {
-                console.log('Skipping ' + st.transaction.name + '. Reason: ' + nextRun + ' < ' + new Date());
+                console.log('Skipping ' + st.transaction.name + '. Reason: ' + nextRun + ' > ' + new Date());
             }
 
             return Promise.all(promises);
