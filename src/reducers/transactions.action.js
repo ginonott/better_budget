@@ -13,7 +13,8 @@ export const TRANSACTION_TYPES = {
     'REMOVE_TRANSACTION': 'REMOVE_TRANSACTION',
     'CHANGE_DATE': 'CHANGE_DATE',
     'SET_TRANSACTION_ADDER': 'SET_TRANSACTION_ADDER',
-    'SET_TAG_FILTER': 'SET_TAG_FILTER'
+    'SET_TAG_FILTER': 'SET_TAG_FILTER',
+    'CLEAR_TRANSACTION_ADDER': 'CLEAR_TRANSACTION_ADDER'
 };
 
 /**
@@ -129,3 +130,9 @@ export const setTagFilter = (tag = 'All') => ({
     type: TRANSACTION_TYPES.SET_TAG_FILTER,
     payload: tag
 })
+
+export const clearTransactionAdder = () => {
+    return {
+        type: TRANSACTION_TYPES.CLEAR_TRANSACTION_ADDER
+    }
+}

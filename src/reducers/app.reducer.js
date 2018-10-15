@@ -190,6 +190,12 @@ function transactionReducer(state = defaultState.transactions, action) {
 
 function transactionAdderReducer(state = defaultState.transactionAdder, action, wholeState = defaultState) {
     switch (action.type) {
+        case TRANSACTION_TYPES.CLEAR_TRANSACTION_ADDER: {
+            return {
+                ...defaultState.transactionAdder
+            };
+        }
+
         case TRANSACTION_TYPES.ADD_TRANSACTION: {
             if (action.meta.status === STATUSES.FAILED) {
                 return {

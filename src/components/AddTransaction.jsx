@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Input, Segment, Button, Dropdown, Checkbox, Table } from 'semantic-ui-react';
 import { connect } from 'react-redux';
-import { addTransaction, setTransactionAdder, loadTransactions } from '../reducers/transactions.action';
+import { addTransaction, setTransactionAdder, loadTransactions, clearTransactionAdder } from '../reducers/transactions.action';
 import STATUSES from '../constants/status';
 import moment from 'moment';
 import { getDateRange, isDateBefore } from '../util';
@@ -94,6 +94,10 @@ class AddTransaction extends Component {
     }
 
     renderSimilarTransactionsWarning = () => {
+        if (this.props.transaction.id) {
+            return null;
+        }
+
         return (
             <div>
                 <Alert removeAlert={null} type="info" msg="This transaction may already exist. See below for similar transactions"/>
@@ -161,14 +165,7 @@ class AddTransaction extends Component {
                         {id.length > 0 ? 'Save' : 'Add'} Transaction
                     </Button>
                     {id !== '' ? (
-                        <Button onClick={this.props.setTransactionAdderState.bind(null, {
-                            id: '',
-                            name: '',
-                            description: '',
-                            cost: 0,
-                            date,
-                            tags: []
-                        })}>
+                        <Button onClick={this.props.clearTransactionAdder.bind(null)}>
                             Cancel Edit
                         </Button>
                     ) : null}
@@ -195,6 +192,9 @@ const mapDispatchToProps = dispatch => ({
     },
     setTransactionAdderState: transactionAdderDiff => {
         dispatch(setTransactionAdder(transactionAdderDiff));
+    },
+    clearTransactionAdder: () => {
+        dispatch(clearTransactionAdder());
     },
     loadTransactions: date => {
         dispatch(loadTransactions(getDateRange(date)));
