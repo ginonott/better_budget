@@ -3,11 +3,14 @@ import { connect } from 'react-redux';
 import { Segment, Button } from 'semantic-ui-react';
 import { removeAlert } from "../reducers/alerts.action";
 
-const Alert = ({ msg, id, type, removeAlert }) => (
+export const Alert = ({ msg, id, type, removeAlert }) => (
     <Segment className={`alert ${type.toLowerCase()}`}>
-        <div className="alert-heading">
-            <Button icon="close" onClick={removeAlert.bind(null, id)} className={`alert-close-btn ${type.toLowerCase()}`} />
-        </div>
+        {removeAlert ?
+            <div className="alert-heading">
+                <Button icon="close" onClick={removeAlert.bind(null, id)} className={`alert-close-btn ${type.toLowerCase()}`} />
+            </div>
+            : null
+        }
         <div className={`alert-body ${type.toLowerCase()}`}>
             <p>{msg}</p>
         </div>

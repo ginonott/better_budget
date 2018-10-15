@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
-import { Input, Segment, Button, Dropdown, Checkbox } from 'semantic-ui-react';
+import { Input, Segment, Button, Dropdown, Checkbox, Table } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { addTransaction, setTransactionAdder, loadTransactions } from '../reducers/transactions.action';
 import STATUSES from '../constants/status';
 import moment from 'moment';
 import { getDateRange, isDateBefore } from '../util';
+import { Alert } from './AlertCenter';
+import { TransactionRow } from './TransactionView';
+import {throttle} from 'lodash';
 
 class AddTransaction extends Component {
     constructor(props) {
@@ -30,7 +33,7 @@ class AddTransaction extends Component {
         this.setState({ reoccursOn: value });
     }
 
-    onInputChange = (prop, _, { value }) => {
+    onInputChange = throttle((prop, _, { value }) => {
         if (prop === 'date') {
             value = moment(value, 'YYYY-MM-DD').toDate();
 
@@ -54,7 +57,7 @@ class AddTransaction extends Component {
         this.props.setTransactionAdderState({
             [prop]: value
         });
-    }
+    });
 
     createTransaction = () => {
         if ((!this.props.transaction.id || this.props.transaction.id !== '') && this.state.showReoccuring) {
@@ -90,6 +93,32 @@ class AddTransaction extends Component {
         )
     }
 
+    renderSimilarTransactionsWarning = () => {
+        return (
+            <div>
+                <Alert removeAlert={null} type="info" msg="This transaction may already exist. See below for similar transactions"/>
+                <div className="transaction-peek">
+                    <Table>
+                        <Table.Body>
+                            {this.props.similarTransactions.map(t =>
+                                <TransactionRow
+                                    key={t.id}
+                                    transaction={t}
+                                    removeTransaction={() => null}
+                                    setDeleteStatus={() => null}
+                                    editTransaction={() => null}
+                                    deleting={false}
+                                    readOnly={true}
+                                    noTools={true}
+                                />
+                            )}
+                        </Table.Body>
+                    </Table>
+                </div>
+            </div>
+        )
+    };
+
     render() {
         const tagOptions = ['', ...this.props.tagOptions.sort((t1, t2) => t1 >= t2)].map(tag => (
             { key: tag, value: tag, text: tag === '' ? 'None' : tag }
@@ -124,6 +153,7 @@ class AddTransaction extends Component {
                     <div className="reoccuring-cb">
                     </div>
                 </div>
+                {this.props.similarTransactions.length > 0 ? this.renderSimilarTransactionsWarning() : null}
                 {this.state.showReoccuring && id === '' ? this.renderReoccuringTransaction() : null}
                 <br />
                 <div>
@@ -155,7 +185,8 @@ const mapStateToProps = state => ({
     tagOptions: state.tags,
     status: state.transactionAdder.status,
     transaction: state.transactionAdder.transaction,
-    selectedDate: state.transactions.selectedDate
+    selectedDate: state.transactions.selectedDate,
+    similarTransactions: state.transactionAdder.similarTransactions
 });
 
 const mapDispatchToProps = dispatch => ({

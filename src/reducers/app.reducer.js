@@ -4,6 +4,86 @@ import { ALERT_SEVERITY, ALERT_TYPES } from "./alerts.action";
 import { AUTH_TYPES } from './auth.action';
 import { BUDGET_TYPES } from "./budget.action";
 
+// utilities
+function memoizeIt(fn) {
+    const memoizedValues = {};
+
+    return (...args) => {
+        const key = args.reduce((str, arg) => `${str}|${JSON.stringify(arg)}`, '');
+
+        if (memoizedValues[key] !== undefined) {
+            return memoizedValues[key];
+        }
+
+        const retVal = fn(...args);
+        memoizedValues[key] = retVal;
+
+        return retVal;
+    };
+}
+
+const editDistance = memoizeIt(function(s1, s1Length, s2, s2Length) {
+  let cost = 0;
+
+  /* base case: empty strings */
+  if (s1Length === 0) return s2Length;
+  if (s2Length === 0) return s1Length;
+
+  /* test if last characters of the strings match */
+  if (s1[s1Length - 1] === s2[s2Length - 1]) {
+      cost = 0;
+  } else {
+      cost = 1;
+  }
+
+  /* return minimum of delete char from s, delete char from t, and delete char from both */
+  return Math.min(
+    editDistance(s1, s1Length - 1, s2, s2Length    ) + 1,
+    editDistance(s1, s1Length    , s2, s2Length - 1) + 1,
+    editDistance(s1, s1Length - 1, s2, s2Length - 1) + cost);
+});
+
+function areStringsAlike(s1, s2) {
+    return (1 / editDistance(s1.toUpperCase(), s1.length, s2.toUpperCase(), s2.length)) >= 0.75;
+}
+
+function isSameDate(d1, d2) {
+    return d1.getDate() === d2.getDate()
+        && d1.getMonth() === d2.getMonth()
+        && d1.getYear() === d2.getYear();
+}
+
+function isSimilarTransactionTo(transaction, transactions) {
+    const similarTransactions = transactions.reduce((similarTransactions, t) => {
+        // For hard matches (ie, the name matches perfectly, the price matches perfectly)
+        if (transaction.name === t.name) {
+            return [...similarTransactions, t];
+        }
+
+        if (transaction.cost === t.cost) {
+            return [...similarTransactions, t];
+        }
+
+        const similarities = [
+            areStringsAlike(transaction.name, t.name),
+            areStringsAlike(transaction.description, t.description),
+            isSameDate(transaction.date, t.date),
+            transaction.cost === t.cost,
+            transaction.tags[0] === t.tags[0]
+        ];
+
+        const similaritiesCnt = similarities.reduce((cnt, cur) => cur ? cnt + 1 : cnt, 0);
+
+        if (similaritiesCnt >= 3) {
+            return [...similarTransactions, t];
+        }
+
+        return similarTransactions;
+    }, []);
+
+    return similarTransactions;
+}
+
 const defaultState = Object.freeze({
     tags: [
         'Drinks', 'Restaurants', 'Snacks',
@@ -30,7 +110,8 @@ const defaultState = Object.freeze({
             tags: []
         },
         status: STATUSES.NOT_STARTED,
-        error: null
+        error: null,
+        similarTransactions: []
     },
     user: {
         loggedIn: false,
@@ -107,7 +188,7 @@ function transactionReducer(state = defaultState.transactions, action) {
     }
 }
 
-function transactionAdderReducer(state = defaultState.transactionAdder, action) {
+function transactionAdderReducer(state = defaultState.transactionAdder, action, wholeState = defaultState) {
     switch (action.type) {
         case TRANSACTION_TYPES.ADD_TRANSACTION: {
             if (action.meta.status === STATUSES.FAILED) {
@@ -130,13 +211,19 @@ function transactionAdderReducer(state = defaultState.transactionAdder, action) 
         }
 
         case TRANSACTION_TYPES.SET_TRANSACTION_ADDER: {
+            const newTransaction = {
+                ...state.transaction,
+                ...action.payload
+            };
+
             return {
                 ...state,
-                transaction: {
-                    ...state.transaction,
-                    ...action.payload
-                }
-            }
+                transaction: newTransaction,
+                similarTransactions: isSimilarTransactionTo(
+                    newTransaction,
+                    Object.values(wholeState.transactions.transactionsById)
+                )
+            };
         }
 
         case TRANSACTION_TYPES.CHANGE_DATE: {
@@ -247,16 +334,14 @@ function monthlyBudgetReducer(state = defaultState.budget, action) {
 }
 
 function budgetReducer(state = defaultState, action) {
-    const newState = { ...state };
-
     return {
-        ...newState,
+        ...state,
         alerts: alertReducer(state.alerts, action),
         transactions: transactionReducer(state.transactions, action),
-        transactionAdder: transactionAdderReducer(state.transactionAdder, action),
+        transactionAdder: transactionAdderReducer(state.transactionAdder, action, state),
         user: authReducer(state.user, action),
-        budget: monthlyBudgetReducer(state.budget, action)
-    }
+        budget: monthlyBudgetReducer(state.budget, action),
+    };
 }
 
 export default budgetReducer;

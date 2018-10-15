@@ -5,7 +5,7 @@ import moment from 'moment';
 import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter } from '../reducers/transactions.action';
 import { getDateRange } from '../util';
 
-class TransactionRow extends Component {
+export class TransactionRow extends Component {
     render() {
         return (
             <Table.Row>
@@ -21,17 +21,19 @@ class TransactionRow extends Component {
                         </Label>
                     ))}
                 </Table.Cell>
-                <Table.Cell>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Button icon="pencil" disabled={this.props.readOnly} onClick={this.props.editTransaction.bind(null, this.props.transaction)} />
-                        <Button loading={this.props.deleting}
-                            disabled={this.props.readOnly}
-                            style={{ color: 'red' }} icon="trash" onClick={() => {
-                                this.props.removeTransaction(this.props.transaction.id);
-                                this.props.setDeleteStatus(this.props.transaction.id);
-                            }} />
-                    </div>
-                </Table.Cell>
+                {!this.props.noTools ?
+                    <Table.Cell>
+                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                <Button icon="pencil" disabled={this.props.readOnly} onClick={this.props.editTransaction.bind(null, this.props.transaction)} />
+                                <Button loading={this.props.deleting}
+                                    disabled={this.props.readOnly}
+                                    style={{ color: 'red' }} icon="trash" onClick={() => {
+                                        this.props.removeTransaction(this.props.transaction.id);
+                                        this.props.setDeleteStatus(this.props.transaction.id);
+                                    }} />
+                            </div>
+                    </Table.Cell>
+                : null}
             </Table.Row>
         )
     }

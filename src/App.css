@@ -92,6 +92,17 @@
   align-items: flex-start;
 }
 
+.alert.info {
+  background-color: rgb(173, 216, 230);
+  border-color: rgb(148, 215, 238);
+}
+
+.transaction-peek {
+  border: 2px dashed lightblue;
+  border-radius: 14px;
+  padding: 2em;
+}
+
 .alert.danger {
   background-color: lightpink;
   border-color: pink;
