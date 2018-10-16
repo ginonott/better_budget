@@ -6,7 +6,7 @@ import { BUDGET_TYPES } from "./budget.action";
 
 // utilities
 function memoizeIt(fn) {
-    const memoizedValues = {};
+    let memoizedValues = {};
 
     window.setInterval(() => {
         memoizedValues = {};
@@ -93,7 +93,8 @@ const defaultState = Object.freeze({
         'Drinks', 'Restaurants', 'Snacks',
         'Pets', 'Bills', 'Home', 'Laundry',
         'Health', 'Groceries', 'Entertainment',
-        'Clothing', 'Gifts', 'Transportation'
+        'Clothing', 'Gifts', 'Transportation',
+        'Vacation'
     ],
     alerts: {
         alerts: []
