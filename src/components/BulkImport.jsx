@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Segment, Table, Dropdown, Divider, Checkbox, Label, Popup, Button, Icon } from 'semantic-ui-react';
+import { Segment, Table, Dropdown, Divider, Popup, Button } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { addTransaction } from '../reducers/transactions.action';
 import moment from 'moment';
 import { Alert } from './AlertCenter';
+import { addAlert } from '../reducers/alerts.action';
 
 const DropOrImport = ({onDrop, inputRef}) => (
     <div className="drag_n_drop">
@@ -21,12 +22,16 @@ export class BulkImport extends Component {
         super(props);
 
         this.fileInput = React.createRef();
-
-        this.state = {
+        this.defaultState = {
             data: null,
-            columnTypes: [...POSSIBLE_TYPES],
+            assignedColumns: POSSIBLE_TYPES.reduce((m, t) => {
+                m[t] = -1;
+                return m;
+            }, {}),
             disabledButtons: {}
         }
+
+        this.state = {...this.defaultState};
     }
 
     renderCsvImport = () => {
@@ -35,15 +40,18 @@ export class BulkImport extends Component {
         const [headingRow, ...bodyRows] = csv.trim().split('\n');
 
         const transactionsByCost = this.props.transactionsByCost;
+        const colToType =
+            Object
+                .entries(this.state.assignedColumns)
+                .reduce((m, [type, assignedColumn]) => {
+                    m[assignedColumn] = type;
+                    return m;
+                }, {});
         console.log(this.props);
         return (
-            <div>
-                <Button float="right" onClick={() => {
-                    this.setState({
-                        data: null,
-                        columnTypes: [...POSSIBLE_TYPES],
-                        disabledButtons: {}
-                    });
+            <div style={{textAlign: "right"}}>
+                <Button onClick={() => {
+                    this.setState(this.defaultState);
                 }}>
                     Clear
                 </Button>
@@ -66,18 +74,22 @@ export class BulkImport extends Component {
                                         <Dropdown
                                             selection
                                             placeholder="N/A"
-                                            value={this.state.columnTypes[indx] || null}
+                                            value={colToType[indx] || null}
                                             options={[...POSSIBLE_TYPES].map(t => ({value: t, text: t}))}
                                             onChange={(_, data) => {
-                                                const value = data.value;
-                                                const indxOfVal = this.state.columnTypes.findIndex(v => v === value);
-                                                // swap
-                                                const newArr = [...this.state.columnTypes];
-                                                const tmp = newArr[indx];
-                                                newArr[indx] = value;
-                                                newArr[indxOfVal] = tmp;
+                                                const newState = {
+                                                    assignedColumns: {
+                                                        ...this.state.assignedColumns,
+                                                        [colToType[indx]]: -1,
+                                                        [data.value]: indx
+                                                    }
+                                                };
 
-                                                this.setState({columnTypes: newArr});
+                                                console.log(this.state, newState);
+
+                                                // remove old assignment
+                                                // set to new assignment
+                                                this.setState(newState)
                                             }}
                                         />
                                     </Table.HeaderCell>
@@ -88,24 +100,35 @@ export class BulkImport extends Component {
                     <Table.Body>
                         {bodyRows.map((row, indx) => {
                             const splitStr = row.trim().split(',');
-                            const costPos = this.state.columnTypes.findIndex(s => s === 'Cost');
+                            const costPos = this.state.assignedColumns['Cost'];
+
                             const cost = Math.abs(Number.parseFloat(splitStr[costPos]));
                             const doesCostExist = transactionsByCost[JSON.stringify(cost.toFixed(2))];
                             const firstTrans = doesCostExist ? transactionsByCost[JSON.stringify(cost.toFixed(2))][0] : {};
+
                             const addTrans = () => {
+                                let quit = false;
+                                POSSIBLE_TYPES.filter(t => t !== 'Description').forEach(t => {
+                                    if (this.state.assignedColumns[t] === -1) {
+                                        this.props.alertUser(`You must assign "${t}" to a column first!`);
+                                        quit = true;
+                                    }
+                                });
+
+                                if (quit) {
+                                    return;
+                                }
+
                                 this.props.addTransaction(
-                                    splitStr[this.state.columnTypes.findIndex(s => s === 'Name')],
-                                    splitStr[this.state.columnTypes.findIndex(s => s === 'Date')],
+                                    splitStr[this.state.assignedColumns['Name']],
+                                    splitStr[this.state.assignedColumns['Date']],
                                     cost,
-                                    splitStr[this.state.columnTypes.findIndex(s => s === 'Description')],
+                                    splitStr[this.state.assignedColumns['Description']],
                                 );
 
                                 this.setState({disabledButtons: {...this.state.disabledButtons, [indx]: true}});
                             }
 
-                            if (indx === 0) {
-                                console.log(cost, doesCostExist);
-                            }
                             return (
                                 <Table.Row>
                                     <Table.Cell>
@@ -127,7 +150,7 @@ export class BulkImport extends Component {
                                     </Table.Cell>
                                     {row.split(',').map((val, indx) => (
                                         <Table.Cell>
-                                            {val}
+                                            {colToType[indx] === 'Cost' ? parseFloat(val).toFixed(2) : val}
                                         </Table.Cell>
                                     ))}
                                 </Table.Row>
@@ -189,5 +212,8 @@ export default connect(state => ({
 }), dispatch => ({
     addTransaction: (name, date, cost, desc) => {
         dispatch(addTransaction({name, date: moment(date).toDate(), cost, description: desc || '', tags: []}));
+    },
+    alertUser: msg => {
+        dispatch(addAlert(msg));
     }
 }))(BulkImport);
