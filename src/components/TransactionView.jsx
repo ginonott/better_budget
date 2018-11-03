@@ -4,8 +4,22 @@ import { Segment, Table, Label, Button, Divider, Dropdown } from 'semantic-ui-re
 import moment from 'moment';
 import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter } from '../reducers/transactions.action';
 import { getDateRange } from '../util';
+import PropTypes from 'prop-types';
 
 export class TransactionRow extends Component {
+    static propTypes = {
+        transaction: PropTypes.shape({
+            id: PropTypes.string,
+            name: PropTypes.string,
+            description: PropTypes.string,
+            cost: PropTypes.number
+        }),
+
+        readOnly: PropTypes.bool,
+        deleting: PropTypes.bool,
+        noTools: PropTypes.bool
+    }
+
     render() {
         return (
             <Table.Row>

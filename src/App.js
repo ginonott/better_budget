@@ -12,6 +12,7 @@ import Login from './components/Login';
 import {checkAuth} from './reducers/auth.action';
 import firebase from 'firebase';
 import BudgetView from './components/BudgetView';
+import BulkImport from './components/BulkImport';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -28,6 +29,7 @@ class LoggedInApp extends Component {
       <React.Fragment>
         <NavbarMenu/>
         <AddTransaction/>
+        <BulkImport/>
         <BudgetView/>
         <TransactionView/>
       </React.Fragment>

@@ -43,7 +43,14 @@ export const loadTransactions = ({ from, to }) => async dispatch => {
         const transactions = await getTransactions({ from, to }) || [];
 
         return {
-            from, to, transactions
+            from, to, transactions: transactions.map(t => ({
+                ...t,
+                name: t.name || '',
+                cost: t.cost || 0,
+                description: t.description || t.desc || '',
+                date: t.date || new Date(),
+                tags: t.tags || []
+            }))
         }
     });
 }
@@ -76,12 +83,16 @@ async function addReoccuringTransaction(transaction) {
     };
 }
 
+export const addTransactionsByBulk = transactions => async dispatch => {
+
+}
+
 export const addTransaction = (transaction) => async dispatch => {
-    if (transaction.name.length < 1 || transaction.date === 'Invalid Date') {
+    if (transaction.name.length < 1 || transaction.date === 'Invalid Date' || isNaN(transaction.cost) || !transaction.tags) {
         dispatch({
             type: '',
             payload: {
-                error: new Error('Invalid date or name. Name must not be empty. Please fix either of them and try again.')
+                error: new Error('Invalid date or name or cost. Name must not be empty. Please fix either of them and try again.')
             },
             meta: {
                 status: STATUSES.FAILED

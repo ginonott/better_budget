@@ -16,7 +16,6 @@ function getBudgetBreakdown(transactionsById) {
     let transactions = Object.values(transactionsById);
     transactions.forEach(transaction => {
         budgetBreakdown.totalSpent += transaction.cost;
-
         if (transaction.tags.length < 1) {
             budgetBreakdown.spentByCategory.Uncategorized += transaction.cost;
         } else {
