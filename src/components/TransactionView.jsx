@@ -105,7 +105,7 @@ class TransactionView extends Component {
             text: h
         }));
 
-        const sortedTransactions = this.props.transactions.sort((t1, t2) => {
+        this.props.transactions.sort((t1, t2) => {
             let property = {
                 [HEADERS[0]]: 'date',
                 [HEADERS[1]]: 'name',
@@ -117,8 +117,12 @@ class TransactionView extends Component {
                 case 'date': {
                     return t2.date.getTime() - t1.date.getTime();
                 }
+                case 'cost': {
+                    return t1[property] - t2[property];
+                }
                 case 'name':
-                case 'description': {
+                case 'description':
+                default:  {
                     if (t1[property] < t2[property]) {
                         return -1;
                     } else if (t1[property] > t2[property]) {
@@ -126,9 +130,6 @@ class TransactionView extends Component {
                     } else {
                         return 0;
                     }
-                }
-                case 'cost': {
-                    return t1[property] - t2[property];
                 }
             }
         });
