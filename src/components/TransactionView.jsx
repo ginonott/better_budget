@@ -53,12 +53,15 @@ export class TransactionRow extends Component {
     }
 }
 
+const HEADERS = ["Purchased On", "Transaction Name", "Description", "Cost", "Tags", "Actions"];
+
 class TransactionView extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
             deletingTransactions: [],
+            sortBy: HEADERS[0]
         };
     }
 
@@ -81,6 +84,12 @@ class TransactionView extends Component {
         this.props.setTagFilter(value);
     }
 
+    sortByChanged = (e, { value }) => {
+        this.setState({
+            sortBy: value
+        });
+    }
+
     render() {
         const tagOptions = ['All', 'Uncategorized', ...this.props.tags.sort((t1, t2) => t1 >= t2)].map(t => ({
             key: t,
@@ -88,10 +97,50 @@ class TransactionView extends Component {
             text: t
         }));
 
+        const sorts = HEADERS.slice(0, 4);
+
+        const sortByOptions = sorts.map(h => ({
+            key: h,
+            value: h,
+            text: h
+        }));
+
+        const sortedTransactions = this.props.transactions.sort((t1, t2) => {
+            let property = {
+                [HEADERS[0]]: 'date',
+                [HEADERS[1]]: 'name',
+                [HEADERS[2]]: 'description',
+                [HEADERS[3]]: 'cost',
+            }[this.state.sortBy];
+
+            switch(property) {
+                case 'date': {
+                    return t2.date.getTime() - t1.date.getTime();
+                }
+                case 'name':
+                case 'description': {
+                    if (t1[property] < t2[property]) {
+                        return -1;
+                    } else if (t1[property] > t2[property]) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+                case 'cost': {
+                    return t1[property] - t2[property];
+                }
+            }
+        });
+
         return (
             <Segment id="transactions" className="transaction-view">
                 <div className="transaction-header">
-                    <span>Showing <Dropdown onChange={this.tagFilterChanged} value={this.props.tagFilter} inline options={tagOptions} /></span>
+                    <span>
+                        Showing <Dropdown onChange={this.tagFilterChanged} value={this.props.tagFilter} inline options={tagOptions} />
+                        &nbsp;&nbsp;
+                        Sort By <Dropdown onChange={this.sortByChanged} value={this.state.sortBy} inline options={sortByOptions}/>
+                    </span>
                     <Button loading={this.props.loading} icon="refresh" onClick={this.props.loadTransactions.bind(null, getDateRange(this.props.selectedDate))} />
                 </div>
                 <Divider />
@@ -99,7 +148,7 @@ class TransactionView extends Component {
                     <Table striped>
                         <Table.Header>
                             <Table.Row>
-                                {["Purchased On", "Transaction Name", "Description", "Cost", "Tags", "Actions"].map(n => (
+                                {HEADERS.map(n => (
                                     <Table.HeaderCell key={n}>
                                         {n}
                                     </Table.HeaderCell>
@@ -112,9 +161,6 @@ class TransactionView extends Component {
                                     (this.props.tagFilter === 'Uncategorized' && t.tags.length === 0)
                                     || this.props.tagFilter === 'All'
                                     || t.tags.includes(this.props.tagFilter)
-                                ))
-                                .sort((t1, t2) => (
-                                    t2.date.getTime() - t1.date.getTime()
                                 ))
                                 .map(t => (
                                     <TransactionRow
