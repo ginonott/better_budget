@@ -99,6 +99,10 @@ const defaultState = Object.freeze({
     alerts: {
         alerts: []
     },
+    scheduledTransactions: {
+        scheduledTransactions: [],
+        status: STATUSES.NOT_STARTED,
+    },
     transactions: {
         transactionsById: {},
         status: STATUSES.NOT_STARTED,
@@ -344,6 +348,54 @@ function monthlyBudgetReducer(state = defaultState.budget, action) {
     }
 }
 
+function scheduledTransactionsReducer(state = defaultState.scheduledTransactions, action) {
+    switch(action.type) {
+        case TRANSACTION_TYPES.GET_SCHEDULED_TRANSACTIONS: {
+            if (action.meta.status === STATUSES.FAILED) {
+                return {
+                    ...defaultState.scheduledTransactions,
+                    status: action.meta.status
+                };
+            }
+
+            if (action.meta.status === STATUSES.STARTED) {
+                return {
+                    ...state,
+                    status: action.meta.status
+                }
+            }
+
+            return {
+                ...state,
+                status: action.meta.status,
+                scheduledTransactions: action.payload.scheduledTransactions
+            }
+        }
+        case TRANSACTION_TYPES.REMOVE_SCHEDULED_TRANSACTIONS: {
+            if (action.meta.status === STATUSES.FAILED) {
+                return {
+                    ...state,
+                    status: action.meta.status
+                };
+            }
+
+            if (action.meta.status === STATUSES.STARTED) {
+                return {
+                    ...state,
+                    status: action.meta.status
+                }
+            }
+
+            return {
+                ...state,
+                status: action.meta.status,
+                scheduledTransactions: state.scheduledTransactions.filter(t => t.id != action.payload.scheduledTransactionId)
+            }
+        }
+    }
+    return state;
+}
+
 function budgetReducer(state = defaultState, action) {
     return {
         ...state,
@@ -352,6 +404,7 @@ function budgetReducer(state = defaultState, action) {
         transactionAdder: transactionAdderReducer(state.transactionAdder, action, state),
         user: authReducer(state.user, action),
         budget: monthlyBudgetReducer(state.budget, action),
+        scheduledTransactions: scheduledTransactionsReducer(state.scheduledTransactions, action)
     };
 }
 

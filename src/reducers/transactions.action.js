@@ -1,7 +1,7 @@
 import STATUSES from '../constants/status';
-import { TRANSACTIONS, SCHEDULED } from '../constants/database';
+import { TRANSACTIONS, SCHEDULED, LOG } from '../constants/database';
 import firebase from 'firebase';
-import { getDateRange } from '../util';
+import { getDateRange, logit } from '../util';
 import { asyncAction } from './async.action';
 import { addAlert, ALERT_SEVERITY } from './alerts.action';
 
@@ -14,13 +14,16 @@ export const TRANSACTION_TYPES = {
     'CHANGE_DATE': 'CHANGE_DATE',
     'SET_TRANSACTION_ADDER': 'SET_TRANSACTION_ADDER',
     'SET_TAG_FILTER': 'SET_TAG_FILTER',
-    'CLEAR_TRANSACTION_ADDER': 'CLEAR_TRANSACTION_ADDER'
+    'CLEAR_TRANSACTION_ADDER': 'CLEAR_TRANSACTION_ADDER',
+    'GET_SCHEDULED_TRANSACTIONS': 'GET_SCHEDULED_TRANSACTIONS',
+    'REMOVE_SCHEDULED_TRANSACTIONS': 'REMOVE_SCHEDULED_TRANSACTIONS'
 };
 
 /**
  *
- * @param {Date} from - the beginning range
- * @param {Date} to - the ending range
+ * @param {object} range - the range of the transactions to get
+ * @param {Date} range.from - the beginning range
+ * @param {Date} range.to - the ending range
  */
 async function getTransactions({ from, to }) {
     const transactionsQuerySnapshot = await db.collection(TRANSACTIONS)
@@ -58,8 +61,10 @@ export const loadTransactions = ({ from, to }) => async dispatch => {
 async function addTransactionToDB(transaction) {
     if (transaction.id) {
         await db.collection(TRANSACTIONS).doc(transaction.id).set(transaction);
+        await logit(`updated transaction ${transaction.id}`, {transaction});
     } else {
         await db.collection(TRANSACTIONS).doc().set(transaction);
+        await logit(`updated transaction ${transaction.name}`, {transaction});
     }
 
     return {
@@ -78,13 +83,46 @@ async function addReoccuringTransaction(transaction) {
             tags: transaction.tags
         }
     });
+
+    await logit(`added new re-occuring transaction ${transaction.name}`);
+
     return {
         result: 'Successfully upserted reoccuring transaction'
     };
 }
 
-export const addTransactionsByBulk = transactions => async dispatch => {
 
+async function getScheduledTransactions() {
+    const reoccuringTransactions = [];
+    const snapshot = await db.collection(SCHEDULED).get();
+
+    snapshot.forEach(doc => {
+        reoccuringTransactions.push({...doc.data(), id: doc.id});
+    });
+
+    return reoccuringTransactions;
+}
+
+export const getScheduledTransactionsAction = () => async dispatch => {
+    asyncAction(dispatch, TRANSACTION_TYPES.GET_SCHEDULED_TRANSACTIONS, async () => {
+        return {
+            scheduledTransactions: await getScheduledTransactions()
+        }
+    });
+}
+
+async function removeScheduledTransaction(scheduledTransactionId) {
+    await db.collection(SCHEDULED).doc(scheduledTransactionId).delete();
+    await logit(`Deleted scheduled transaction ${scheduledTransactionId}`);
+}
+
+export const removeSchduledTransactionAction = (scheduledTransactionId) => async dispatch => {
+    asyncAction(dispatch, TRANSACTION_TYPES.REMOVE_SCHEDULED_TRANSACTIONS, async () => {
+        await removeScheduledTransaction(scheduledTransactionId);
+        return {
+            scheduledTransactionId
+        }
+    });
 }
 
 export const addTransaction = (transaction) => async dispatch => {
@@ -112,6 +150,7 @@ export const addTransaction = (transaction) => async dispatch => {
 
 async function deleteTransaction(transactionId) {
     await db.collection(TRANSACTIONS).doc(transactionId).delete();
+    await logit(`deleted ${transactionId}`, {transactionId});
 
     return {
         transactionId

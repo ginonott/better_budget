@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Segment, Table, Label, Button, Divider, Dropdown } from 'semantic-ui-react';
 import moment from 'moment';
-import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter } from '../reducers/transactions.action';
+import { removeTransaction, changeDate, setTransactionAdder, loadTransactions, setTagFilter, getScheduledTransactionsAction, removeSchduledTransactionAction } from '../reducers/transactions.action';
 import { getDateRange } from '../util';
 import PropTypes from 'prop-types';
 
@@ -67,6 +67,7 @@ class TransactionView extends Component {
 
     componentDidMount() {
         this.props.loadTransactions(getDateRange(this.props.selectedDate));
+        this.props.getScheduledTransactions();
     }
 
     setDeleteStatus = id => {
@@ -142,10 +143,58 @@ class TransactionView extends Component {
                         &nbsp;&nbsp;
                         Sort By <Dropdown onChange={this.sortByChanged} value={this.state.sortBy} inline options={sortByOptions}/>
                     </span>
-                    <Button loading={this.props.loading} icon="refresh" onClick={this.props.loadTransactions.bind(null, getDateRange(this.props.selectedDate))} />
+                    <Button loading={this.props.loading} icon="refresh" onClick={() => {
+                        this.props.loadTransactions(getDateRange(this.props.selectedDate));
+                        this.props.getScheduledTransactions();
+                    }} />
                 </div>
                 <Divider />
                 <div className="transaction-list">
+                    <Table striped>
+                        <Table.Header>
+                            <Table.Row>
+                                <Table.HeaderCell>
+                                    Scheduled Transaction Name
+                                </Table.HeaderCell>
+                                <Table.HeaderCell>
+                                    Cost
+                                </Table.HeaderCell>
+                                <Table.HeaderCell>
+                                    Scheduled For
+                                </Table.HeaderCell>
+                                <Table.HeaderCell>
+                                    Occurs
+                                </Table.HeaderCell>
+                                <Table.HeaderCell>
+                                    Remove
+                                </Table.HeaderCell>
+                            </Table.Row>
+                        </Table.Header>
+                        <Table.Body>
+                            {this.props.scheduledTransactions.map(st => (
+                                <Table.Row key={st.transaction.name}>
+                                    <Table.Cell>
+                                        {st.transaction.name}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        ${st.transaction.cost.toFixed(2)}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {st.nextRun ? new Date(st.nextRun.seconds * 1000).toLocaleDateString() : 'N/A'}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {st.every}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Button
+                                        style={{ color: 'red' }} icon="trash" onClick={() => {
+                                            this.props.removeScheduledTransaction(st.id);
+                                        }} />
+                                    </Table.Cell>
+                                </Table.Row>
+                            ))}
+                        </Table.Body>
+                    </Table>
                     <Table striped>
                         <Table.Header>
                             <Table.Row>
@@ -190,6 +239,7 @@ class TransactionView extends Component {
 
 export default connect(state => ({
     transactions: Object.values(state.transactions.transactionsById),
+    scheduledTransactions: state.scheduledTransactions.scheduledTransactions,
     selectedDate: state.transactions.selectedDate,
     edittingTransaction: state.transactionAdder.transaction.id,
     tagFilter: state.transactions.tagFilter,
@@ -210,5 +260,11 @@ export default connect(state => ({
     },
     setTagFilter: tag => {
         dispatch(setTagFilter(tag));
+    },
+    getScheduledTransactions: () => {
+        dispatch(getScheduledTransactionsAction())
+    },
+    removeScheduledTransaction: id => {
+        dispatch(removeSchduledTransactionAction(id))
     }
 }))(TransactionView);
