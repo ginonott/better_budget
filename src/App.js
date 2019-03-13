@@ -13,6 +13,7 @@ import {checkAuth} from './reducers/auth.action';
 import firebase from 'firebase';
 import BudgetView from './components/BudgetView';
 import BulkImport from './components/BulkImport';
+import _ from 'lodash';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -48,12 +49,52 @@ class LoggedOutApp extends Component {
 }
 
 class Auth extends Component {
+  /**
+   * @param {number} point - between 0 to 1
+   */
+  interperolate = (fromRGB, toRGB, point) => {
+    const {r: fromR, g: fromG, b: fromB} = fromRGB;
+    const {r: toR, g: toG, b: toB} = toRGB;
+    const deltaR = (toR - fromR) * point;
+    const deltaG = (toG - fromG) * point;
+    const deltaB = (toB - fromB) * point;
+
+    return {r: fromR + deltaR, g: fromG + deltaG, b: fromB + deltaB};
+  }
   componentDidMount() {
+    document.body.style.backgroundColor = `rgb(240, 255, 240)`;
+
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         this.props.checkAuth();
       }
     });
+
+    let ticking = false;
+    window.addEventListener('scroll', _.throttle(() => {
+      let lastKnownScroll = window.scrollY;
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const maxHeight = document.body.scrollHeight;
+          const percentThrough = lastKnownScroll / maxHeight;
+          // rgb(181,255,181)
+          const rgb = this.interperolate({
+            r: 240,
+            g: 255,
+            b: 240
+          }, {
+            r: 181,
+            g: 255,
+            b: 181
+          }, percentThrough);
+          document.body.style.backgroundColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+          ticking = false;
+        });
+
+        ticking = true;
+      }
+    }, 50));
   }
 
   render() {
