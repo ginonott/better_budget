@@ -1,5 +1,5 @@
 import STATUSES from '../constants/status';
-import { TRANSACTIONS, SCHEDULED, LOG } from '../constants/database';
+import { TRANSACTIONS, SCHEDULED } from '../constants/database';
 import firebase from 'firebase';
 import { getDateRange, logit } from '../util';
 import { asyncAction } from './async.action';

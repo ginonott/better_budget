@@ -389,11 +389,13 @@ function scheduledTransactionsReducer(state = defaultState.scheduledTransactions
             return {
                 ...state,
                 status: action.meta.status,
-                scheduledTransactions: state.scheduledTransactions.filter(t => t.id != action.payload.scheduledTransactionId)
+                scheduledTransactions: state.scheduledTransactions.filter(t => t.id !== action.payload.scheduledTransactionId)
             }
         }
+        default: {
+            return state;
+        }
     }
-    return state;
 }
 
 function budgetReducer(state = defaultState, action) {
