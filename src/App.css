@@ -119,3 +119,16 @@
   width: 100%;
   text-align: left;
 }
+
+.ui.secondary.menu {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 720px) {
+  .ui.secondary.menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+}
