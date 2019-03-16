@@ -25,7 +25,9 @@ export const TRANSACTION_TYPES = {
  * @param {Date} range.from - the beginning range
  * @param {Date} range.to - the ending range
  */
-async function getTransactions({ from, to }) {
+export async function getTransactions({ from, to }) {
+    console.log('LOADING TRANSACTIONS FROM', from, to);
+
     const transactionsQuerySnapshot = await db.collection(TRANSACTIONS)
         .where('date', '>=', from)
         .where('date', '<=', to)

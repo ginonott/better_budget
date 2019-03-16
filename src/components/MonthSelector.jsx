@@ -5,50 +5,33 @@ import { Dropdown } from 'semantic-ui-react';
 import STATUSES from '../constants/status';
 import { changeDate } from '../reducers/transactions.action';
 class MonthSelector extends Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            year: new Date().getFullYear()
-        }
-    }
-
     dateChanged = (_, {value}) => {
-        this.props.changeDate(new Date(this.state.year, value, 1));
+        this.props.changeDate(moment(value, 'MMM YYYY').toDate());;
     }
 
     render() {
-        const months = new Array(12)
-            .fill(0)
-            .map((_, indx) => indx)
-            .map(month => ({
-                key: 'month-' + month,
-                value: month,
-                text: `${moment(new Date(new Date().getFullYear(), month, 1)).format('MMMM')}`
-            }));
+        const format = 'MMM YYYY';
+        const months = [];
 
-        const years = new Array(new Date().getFullYear() - 2017).fill(0).map((_, indx) => 2018 + indx).map(year => ({
-            key: year,
-            value: year,
-            text: year
-        }));
+        let month = moment().month(8).date(1).year(2018);
+
+        for (; month.isBefore(moment()); month = month.add(1, 'month')) {
+            const text = month.format(format);
+            months.push({
+                key: text,
+                value: text,
+                text
+            });
+        }
 
         return (
-            <React.Fragment>
-                <Dropdown loading={this.props.loading} onChange={this.dateChanged} value={this.props.selectedDate} selection options={months}/>
-                <span style={{width: '1rem'}}/>
-                <Dropdown onChange={(_, {value}) => {
-                    this.setState({year: value}, () => {
-                        this.dateChanged(null, {value: this.props.selectedDate})
-                    });
-                }} value={this.state.year} selection options={years}/>
-            </React.Fragment>
+            <Dropdown loading={this.props.loading} onChange={this.dateChanged} value={moment(this.props.selectedDate).format(format)} selection options={months}/>
         );
     }
 }
 
 export default connect(state => ({
-    selectedDate: state.transactions.selectedDate.getMonth(),
+    selectedDate: state.transactions.selectedDate,
     loading: state.transactions.status === STATUSES.STARTED
 }), dispatch => ({
     changeDate: date => {
