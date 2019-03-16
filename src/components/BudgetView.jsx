@@ -23,7 +23,8 @@ import {
   Pie,
   PieChart,
   Legend,
-  Label
+  Tooltip,
+  Cell
 } from "recharts";
 import moment from "moment";
 
@@ -147,27 +148,43 @@ class BudgetView extends Component {
     });
   };
 
-  renderBudgetBreakdown = () => {
-    const data = Object.entries(this.props.budgetBreakdown.spentByCategory).map(
-      ([category, cost]) => ({
+  renderBudgetBreakdown = (withoutBills) => {
+    const data = Object.entries(this.props.budgetBreakdown.spentByCategory)
+      .map(([category, cost]) => ({
         category,
         cost
-      })
-    ).sort((catA, catB) => catB.cost - catA.cost);
+      }))
+      .sort((catA, catB) => catB.cost - catA.cost)
+      .filter(d => withoutBills ? d.category !== 'Bills' : true);
+
+    let COLORS = [
+      "#FFF58A",
+      "#FFC9DE",
+      "#AFF8DB",
+      "#85E3FF",
+      "#97A2FF",
+      "#FFCCF9",
+      "#FFABAB",
+      "#E7FFAC",
+      "#6EB5FF",
+      "#F6A6FF"
+    ];
 
     return (
-      <ResponsiveContainer height={400}>
-        <BarChart data={data} margin={{ top: 24 }} >
-          <CartesianGrid strokeDasharray="3" vertical={false}/>
-          <Bar dataKey="cost" fill="#8fbc8f">
-            <LabelList
-              dataKey="cost"
-              position="top"
-              formatter={v => `$${v.toFixed(2)}`}
-            />
-          </Bar>
-          <XAxis dataKey="category" />
-        </BarChart>
+      <ResponsiveContainer height={400} width="100%">
+        <PieChart>
+          <Pie dataKey="cost" nameKey="category" data={data}>
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+            <LabelList dataKey="cost" position="inside"/>
+          </Pie>
+          <Tooltip formatter={(value) => `$${value.toFixed(2)}`}/>
+          <Legend/>
+        </PieChart>
       </ResponsiveContainer>
     );
   };
@@ -195,9 +212,9 @@ class BudgetView extends Component {
     }));
 
     return (
-      <ResponsiveContainer width="99%" height={400}>
+      <ResponsiveContainer width="100%" height={400}>
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false}/>
           <Bar
             dataKey="total"
             fill="#8fbc8f"
@@ -283,8 +300,12 @@ class BudgetView extends Component {
             menu={{ secondary: true }}
             panes={[
               {
-                menuItem: "Budget Breakdown (Bar Chart)",
-                render: this.renderBudgetBreakdown
+                menuItem: "Budget Breakdown",
+                render: this.renderBudgetBreakdown.bind(this, false)
+              },
+              {
+                menuItem: "Budget Breakdown (Without Bills)",
+                render: this.renderBudgetBreakdown.bind(this, true)
               },
               {
                 menuItem: "6 Month Spending (BETA)",
