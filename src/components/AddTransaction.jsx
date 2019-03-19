@@ -7,7 +7,7 @@ import moment from 'moment';
 import { getDateRange, isDateBefore } from '../util';
 import { Alert } from './AlertCenter';
 import { TransactionRow } from './TransactionView';
-import {throttle} from 'lodash';
+import {throttle, debounce} from 'lodash';
 
 class AddTransaction extends Component {
     constructor(props) {
@@ -15,8 +15,44 @@ class AddTransaction extends Component {
 
         this.state = {
             showReoccuring: false,
-            reoccursOn: 'Day'
+            reoccursOn: 'Day',
+            sticky: false
         }
+    }
+
+    calculateBottom() {
+        const element = document.getElementById('add-trans');
+        const bottom = element.getBoundingClientRect().bottom;
+        this.bottom = bottom;
+
+        return bottom;
+    }
+
+    calculateSticky() {
+        const bottom = this.bottom || this.calculateBottom();
+
+        const sticky = window.scrollY > bottom;
+
+        if (sticky !== this.state.sticky) {
+            this.setState({
+                sticky
+            });
+        }
+    }
+
+    componentDidMount() {
+        this.calculateBottom();
+
+        window.addEventListener('scroll', throttle(() => {
+            this.calculateSticky();
+        }, 20, {
+            trailing: false
+        }));
+
+        window.addEventListener('resize', debounce(() => {
+            this.calculateBottom();
+            this.calculateSticky();
+        }, 100));
     }
 
     setReoccuring = showReoccuring => {
@@ -138,7 +174,14 @@ class AddTransaction extends Component {
         } = this.props.transaction;
 
         return (
-            <Segment className="transaction-adder" id="add-trans">
+            <Segment className="transaction-adder" id="add-trans" style={this.state.sticky ? {
+                position: 'fixed',
+                zIndex: 99999999,
+                alignSelf: 'center',
+                width: '100%',
+                marginTop: 0,
+                top: 0
+            } : {}}>
                 <div className="transaction-adder-form">
                     <Input placeholder="Name..."
                         value={name}

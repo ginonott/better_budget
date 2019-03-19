@@ -254,10 +254,7 @@ class BudgetView extends Component {
       );
     }
 
-    const moneyRemaining =
-      this.props.budget.income -
-      this.props.budget.savingsGoal -
-      this.props.budgetBreakdown.totalSpent;
+    const moneyRemaining = this.props.budget.income - this.props.budgetBreakdown.totalSpent;
     const { totalSpent } = this.props.budgetBreakdown;
     return (
       <Segment id="budget-stats">
@@ -272,12 +269,6 @@ class BudgetView extends Component {
               ${this.props.budget.income.toFixed(2)}
             </Statistic.Value>
             <Statistic.Label>Income</Statistic.Label>
-          </Statistic>
-          <Statistic size="tiny">
-            <Statistic.Value>
-              ${this.props.budget.savingsGoal.toFixed(2)}
-            </Statistic.Value>
-            <Statistic.Label>Savings Goal</Statistic.Label>
           </Statistic>
           <Statistic size="tiny">
             <Statistic.Value style={{ color: "#721c24" }}>

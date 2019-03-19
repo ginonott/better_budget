@@ -37,6 +37,7 @@
   flex-direction: row;
   align-content: center;
   justify-content: space-between;
+  transition: all 1s ease;
 }
 
 .budget-view-stats {
