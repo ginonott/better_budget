@@ -278,7 +278,7 @@ class BudgetView extends Component {
           </Statistic>
           <Statistic size="tiny">
             <Statistic.Value
-              style={{ color: moneyRemaining > 0 ? "seagreen" : "red" }}
+              style={{ color: moneyRemaining > this.props.budget.savingsGoal ? "seagreen" : "red" }}
             >
               ${moneyRemaining.toFixed(2)}
             </Statistic.Value>

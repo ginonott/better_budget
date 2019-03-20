@@ -36,7 +36,8 @@ class AddTransaction extends Component {
   calculateBottom() {
     const element = document.getElementById("add-trans");
     const rect = element.getBoundingClientRect();
-    const bottom = rect.bottom + (rect.top - rect.bottom);
+
+    const bottom = this.state.sticky ? rect.top : rect.bottom;
     this.bottom = bottom;
 
     return bottom;
