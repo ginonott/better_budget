@@ -31,26 +31,30 @@ class AddTransaction extends Component {
       sticky: false,
       isMobile: false
     };
+
+    this.top = 0;
+    this.bottom = 0;
   }
 
-  calculateBottom() {
+  calculateEdges() {
     const element = document.getElementById("add-trans");
     const rect = element.getBoundingClientRect();
 
-    const bottom = this.state.sticky ? rect.top : rect.bottom;
+    const bottom = rect.bottom;
+    const top = rect.top;
     this.bottom = bottom;
-
-    return bottom;
+    this.top = top;
   }
 
   calculateSticky() {
-    const bottom = this.bottom || this.calculateBottom();
-
-    const sticky = window.scrollY > bottom;
-
-    if (sticky !== this.state.sticky) {
+      const buffer = (this.bottom - this.top) * 0.1;
+    if (this.state.sticky && (window.scrollY + buffer) <= this.top) {
       this.setState({
-        sticky
+        sticky: false
+      });
+    } else if (!this.state.sticky && (window.scrollY - buffer) >= this.bottom) {
+      this.setState({
+        sticky: true
       });
     }
   }
@@ -64,7 +68,7 @@ class AddTransaction extends Component {
   };
 
   componentDidMount() {
-    this.calculateBottom();
+    this.calculateEdges();
     this.calculateMobile();
 
     window.addEventListener(
@@ -84,7 +88,7 @@ class AddTransaction extends Component {
       "resize",
       debounce(() => {
         this.calculateMobile();
-        this.calculateBottom();
+        this.calculateEdges();
         this.calculateSticky();
       }, 100)
     );
@@ -279,16 +283,16 @@ class AddTransaction extends Component {
             />
           )}
           {!(this.state.isMobile && this.state.sticky) && (
-            <div style={{width: '100%', paddingRight: '20px'}}>
-                <Dropdown
-                    fluid
-                    search
-                    selection
-                    options={tagOptions}
-                    placeholder="Tags..."
-                    value={tags[0] || ""}
-                    onChange={this.onInputChange.bind(null, "tags")}
-                />
+            <div style={{ width: "100%", paddingRight: "20px" }}>
+              <Dropdown
+                fluid
+                search
+                selection
+                options={tagOptions}
+                placeholder="Tags..."
+                value={tags[0] || ""}
+                onChange={this.onInputChange.bind(null, "tags")}
+              />
             </div>
           )}
           {!(this.state.isMobile && this.state.sticky) && (
@@ -309,7 +313,11 @@ class AddTransaction extends Component {
           >
             {id.length > 0 ? "Save" : "Add"} Transaction
           </Button>
-          {this.state.sticky && <span style={{color: 'gray', alignSelf: 'end'}}><i>Scroll to top see full options</i></span>}
+          {this.state.sticky && (
+            <span style={{ color: "gray", alignSelf: "end" }}>
+              <i>Scroll to top see full options</i>
+            </span>
+          )}
           {id !== "" ? (
             <Button onClick={this.props.clearTransactionAdder.bind(null)}>
               Cancel Edit
