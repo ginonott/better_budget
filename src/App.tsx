@@ -4,10 +4,9 @@ import { BudgetServiceProvider } from "./components/BudgetServiceProvider";
 import SiteRouter from "./components/SiteRouter";
 import { createMuiTheme } from "@material-ui/core";
 import { ThemeProvider } from "@material-ui/styles";
-import LocalStorageBudgetService from "./services/LocalStorageBudgetService";
-import MemoryBudgetService from "./services/MemoryBudgetService";
+import { FirestoreBudgetService } from "./services/FirestoreBudgetService";
 
-const budgetService = new LocalStorageBudgetService();
+const budgetService = new FirestoreBudgetService();
 const theme = createMuiTheme();
 
 const App: React.FC = () => {

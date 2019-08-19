@@ -1,6 +1,6 @@
 import MemoryBudgetService from "./MemoryBudgetService";
-import ITransaction from "../models/ITransaction";
-import { ITag } from "../models/ITag";
+import ITransaction from "../models/Transaction";
+import { ITag } from "../models/Tag";
 
 interface ISavedBudgetState {
   transactions: ITransaction[];
@@ -8,10 +8,14 @@ interface ISavedBudgetState {
 }
 
 export default class LocalStorageBudgetService extends MemoryBudgetService {
-  KEY = "budgetAppV3.1";
+  private KEY = "budgetAppV3.1";
 
-  constructor() {
+  constructor(key?: string) {
     super();
+
+    if (key) {
+      this.KEY = key;
+    }
 
     this.hydrate();
   }

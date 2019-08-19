@@ -9,8 +9,8 @@ import React, {
 import IBudgetService, {
   ITransactionQueryOptions
 } from "../services/IBudgetService";
-import ITransaction from "../models/ITransaction";
-import { ITag } from "../models/ITag";
+import ITransaction from "../models/Transaction";
+import { ITag } from "../models/Tag";
 
 interface IBudgetServiceProviderProps {
   budgetService: IBudgetService;
@@ -35,6 +35,7 @@ interface IBudgetServiceSubscriberProps {
   children: (budget: {
     transactions: ITransaction[];
     tags: ITag[];
+    income: number;
   }) => ReactNode;
 }
 
@@ -42,8 +43,15 @@ export const BudgetServiceSubscriber: FunctionComponent<
   IBudgetServiceSubscriberProps
 > = ({ children, queryOptions = null }) => {
   const [_timestamp, update] = useState(Date.now());
-  const [transactions, setTransactions] = useState<ITransaction[]>([]);
-  const [tags, setTags] = useState<ITag[]>([]);
+  const [{ transactions, tags, income }, setBudgetState] = useState<{
+    transactions: ITransaction[];
+    tags: ITag[];
+    income: number;
+  }>({
+    transactions: [],
+    tags: [],
+    income: 0
+  });
 
   const budgetService = useContext(BudgetServiceContext);
 
@@ -62,14 +70,14 @@ export const BudgetServiceSubscriber: FunctionComponent<
   useEffect(() => {
     Promise.all([
       budgetService.getTransactions(queryOptions || {}),
-      budgetService.getTags()
-    ]).then(([transactions, tags]) => {
-      setTransactions(transactions);
-      setTags(tags);
+      budgetService.getTags(),
+      budgetService.getIncome()
+    ]).then(([transactions, tags, income]) => {
+      setBudgetState({ transactions, tags, income });
     });
-  }, [_timestamp, queryOptions]);
+  }, [_timestamp, queryOptions, budgetService]);
 
-  return <>{children({ transactions, tags })}</>;
+  return <>{children({ transactions, tags, income })}</>;
 };
 
 export const useBudgetService = () => useContext(BudgetServiceContext);

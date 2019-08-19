@@ -1,20 +1,30 @@
 import IBudgetService, { ITransactionQueryOptions } from "./IBudgetService";
-import ITransaction from "../models/ITransaction";
-import { ITag } from "../models/ITag";
+import ITransaction from "../models/Transaction";
+import { ITag } from "../models/Tag";
 import { isBefore, isAfter } from "date-fns";
+import { IGoal } from "../models/Goal";
+
+function getId() {
+  return `${Date.now()}-${Math.floor(Math.random() * 4)}`;
+}
 
 export default class MemoryBudgetService implements IBudgetService {
   public transactions: ITransaction[] = [];
+
   public tags: ITag[] = [
     {
-      id: 0,
+      id: "0",
       label: "Groceries"
     },
     {
-      id: 1,
+      id: "1",
       label: "Bills"
     }
   ];
+
+  public goals: IGoal[] = [];
+
+  public income = 0;
 
   subscribers: Array<() => void> = [];
 
@@ -27,26 +37,26 @@ export default class MemoryBudgetService implements IBudgetService {
   async addTransaction(transaction: Exclude<ITransaction, ITransaction["id"]>) {
     this.transactions.push({
       ...transaction,
-      id: Number.parseInt(`${Date.now()}${Math.floor(Math.random() * 4)}`)
+      id: getId()
     });
     this.notify();
   }
 
   async deleteTransaction(transactionId: ITransaction["id"]) {
     this.transactions = this.transactions.filter(t => t.id !== transactionId);
+    this.notify();
   }
 
-  async editTransaction(
-    transaction: Partial<ITransaction> & ITransaction["id"]
-  ) {
+  async editTransaction(transaction: ITransaction) {
     this.transactions = this.transactions.map(t =>
       t.id === transaction.id
         ? {
             ...t,
-            transaction
+            ...transaction
           }
         : t
     );
+    this.notify();
   }
 
   async getTransactions(queryOptions: ITransactionQueryOptions) {
@@ -57,8 +67,45 @@ export default class MemoryBudgetService implements IBudgetService {
       .filter(t => queryOptions.to && isAfter(queryOptions.to, t.purchasedOn));
   }
 
+  async getTransaction(id: ITransaction["id"]) {
+    return this.transactions.find(t => t.id === id);
+  }
+
   async getTags() {
     return this.tags;
+  }
+
+  async getGoals() {
+    return this.goals;
+  }
+
+  async addGoal(goal: IGoal) {
+    this.goals = [
+      ...this.goals,
+      {
+        ...goal,
+        id: getId()
+      }
+    ];
+  }
+
+  async editGoal(goal: IGoal) {
+    this.goals = this.goals.map(g =>
+      g.id === goal.id
+        ? {
+            ...g,
+            ...goal
+          }
+        : g
+    );
+  }
+
+  async getIncome() {
+    return this.income;
+  }
+
+  async setIncome(income: number) {
+    this.income = income;
   }
 
   subscribe(cb: () => void) {

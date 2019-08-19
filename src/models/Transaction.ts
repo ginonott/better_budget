@@ -1,7 +1,7 @@
-import { ITag } from "./ITag";
+import { ITag } from "./Tag";
 
 export default interface ITransaction {
-  id: number;
+  id: string;
   name: string;
   cost: number;
   purchasedOn: Date;
