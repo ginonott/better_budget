@@ -100,7 +100,6 @@ const BudgetHeader: FunctionComponent<IBudgetHeader> = ({
           .map((_, i) => i)
           .map(month => (
             <MenuItem key={month} value={month}>
-              {" "}
               {format(new Date(2019, month, 1), "MMMM")}
             </MenuItem>
           ))}
@@ -122,8 +121,7 @@ const BudgetHeader: FunctionComponent<IBudgetHeader> = ({
           .map((_, i) => i + 2018)
           .map(year => (
             <MenuItem key={year} value={year}>
-              {" "}
-              {year}{" "}
+              {year}
             </MenuItem>
           ))}
       </Select>

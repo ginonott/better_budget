@@ -10,7 +10,9 @@ import {
   Button,
   Select,
   MenuItem,
-  CircularProgress
+  CircularProgress,
+  Checkbox,
+  FormControlLabel
 } from "@material-ui/core";
 import { format, subDays, getDay, isValid } from "date-fns";
 import { Link } from "react-router-dom";
@@ -75,7 +77,7 @@ export const AddTransactionView: FunctionComponent<IAddTransactionView> = ({
   const tags = useTags();
 
   // get a transaction if it exists
-  const [formState, setFormState] = useState<ITransactionFormState>({
+  const defaultFormState = {
     id: "",
     name: {
       value: "",
@@ -97,7 +99,13 @@ export const AddTransactionView: FunctionComponent<IAddTransactionView> = ({
       value: "",
       error: false
     }
-  });
+  };
+
+  const [formState, setFormState] = useState<ITransactionFormState>(
+    defaultFormState
+  );
+
+  const [addAnotherState, setAddAnother] = useState<boolean>(false);
 
   const transactionId = new URLSearchParams(location.search).get("tid");
 
@@ -199,7 +207,12 @@ export const AddTransactionView: FunctionComponent<IAddTransactionView> = ({
       });
     }
 
-    history.push("/");
+    if (addAnotherState) {
+      setFormState(defaultFormState);
+      return;
+    }
+
+    history.length > 0 ? history.goBack() : history.push("/");
   };
 
   const today = new Date();
@@ -322,6 +335,18 @@ export const AddTransactionView: FunctionComponent<IAddTransactionView> = ({
           <Button variant="contained" color="primary" type="submit">
             {formState.id === "" ? "Add" : "Save"} Transaction
           </Button>
+          <span style={{ width: "1rem" }} />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={addAnotherState}
+                onChange={() => setAddAnother(!addAnotherState)}
+                value="addAnother"
+                color="primary"
+              />
+            }
+            label="Add Another"
+          />
         </div>
       </form>
     </Container>

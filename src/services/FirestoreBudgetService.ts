@@ -83,21 +83,17 @@ export class FirestoreBudgetService extends LocalStorageBudgetService {
 
   async getTransactions(queryOptions: ITransactionQueryOptions) {
     let collection = this.db.collection("transactions");
-    let query;
+    let query = collection.orderBy("purchasedOn", "desc");
 
     if (queryOptions.from) {
       query = collection.where("purchasedOn", ">=", queryOptions.from);
     }
 
     if (queryOptions.to) {
-      if (query) {
-        query = query.where("purchasedOn", "<=", queryOptions.to);
-      } else {
-        query = collection.where("purchasedOn", "<=", queryOptions.to);
-      }
+      query = query.where("purchasedOn", "<=", queryOptions.to);
     }
 
-    const snapshots = query ? await query.get() : await collection.get();
+    const snapshots = await query.get();
 
     const tags = await this.getTags();
 

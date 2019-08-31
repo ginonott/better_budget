@@ -6,6 +6,7 @@ import {
   Button,
   makeStyles,
   Theme,
+  Icon,
   createStyles
 } from "@material-ui/core";
 import { useLogin } from "../hooks/useLogin";
@@ -26,10 +27,15 @@ export const Header = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography variant="h6" color="inherit">
-          Budget v3
-        </Typography>
+        <Button color="inherit" component={Link} to="/">
+          <Typography variant="h6" color="inherit">
+            Budget
+          </Typography>
+        </Button>
         <span className={classes.spacer} />
+        <Button color="inherit" component={Link} to="/spending">
+          Spending <Icon>show_chart</Icon>
+        </Button>
         {user ? (
           <Button
             color="inherit"
@@ -37,7 +43,7 @@ export const Header = () => {
               firebase.auth().signOut();
             }}
           >
-            Logout
+            Logout <Icon>exit_to_app</Icon>
           </Button>
         ) : (
           <Button color="inherit" component={Link} to="/login">

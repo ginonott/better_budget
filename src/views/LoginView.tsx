@@ -30,6 +30,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const LoginView = (history: RouterProps["history"]) => {
+  const ref = new URLSearchParams(history.location.search).get("ref");
+
   const classes = useStyles();
 
   const [formState, setFormState] = useState({ email: "", password: "" });
@@ -51,7 +53,11 @@ export const LoginView = (history: RouterProps["history"]) => {
     fbLoginSvc
       .login(formState.email, formState.password)
       .then(() => {
-        history.replace("/");
+        if (ref) {
+          history.replace(ref);
+        } else {
+          history.replace("/");
+        }
       })
       .catch(err => {
         setErrorMsg(err.message);

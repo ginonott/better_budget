@@ -13,6 +13,7 @@ import { Container } from "@material-ui/core";
 import { Header } from "./TopBar";
 import { useLogin } from "../hooks/useLogin";
 import { LoginView } from "../views/LoginView";
+import { SpendingView } from "../views/SpendingView";
 
 export const SiteRouter: FunctionComponent = () => {
   const thisMonth = getMonth(new Date());
@@ -20,6 +21,8 @@ export const SiteRouter: FunctionComponent = () => {
 
   const defaultPath = `/budget/${thisYear}/${thisMonth + 1}/`;
   const user = useLogin();
+
+  const ref = new URLSearchParams(window.location.search).get("ref");
 
   return (
     <Router>
@@ -47,8 +50,9 @@ export const SiteRouter: FunctionComponent = () => {
               }}
             />
             <Route path="/budget/add" exact component={AddTransaction} />
+            <Route path="/spending" exact component={SpendingView} />
             <Route exact path="/login">
-              <Redirect to={defaultPath} />
+              <Redirect to={ref || defaultPath} />
             </Route>
             <Route>
               {/* The "404" Path */}
@@ -63,7 +67,7 @@ export const SiteRouter: FunctionComponent = () => {
           <Switch>
             <Route exact path="/login" component={LoginView} />
             <Route>
-              <Redirect to="/login" />
+              <Redirect to={`/login?ref=${window.location.pathname}`} />
             </Route>
           </Switch>
         )}
